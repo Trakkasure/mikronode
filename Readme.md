@@ -52,17 +52,17 @@
   Calling new api(host,user,pass) returns a connection object.
 
   * conn.connect(callback)
-    > Connect to the target device. The callback function is called after successful login with the current connection object as its parameter.
+      > Connect to the target device. The callback function is called after successful login with the current connection object as its parameter.
   * conn.openChannel(id)
-    > Open and return a new channel object. Each channel is a unique command line to the mikrotik, allowing simultaneous execution of commands. The ID parameter is optional.
+      > Open and return a new channel object. Each channel is a unique command line to the mikrotik, allowing simultaneous execution of commands. The ID parameter is optional.
   * conn.isConnected()
-    > Returns true is currently connected to a mikrotik device.
+      > Returns true is currently connected to a mikrotik device.
   * conn.closeChannel(id)
-    > Closes an open channel. This will call the close method of the channel object.
+      > Closes an open channel. This will call the close method of the channel object.
   * conn closeOnDone(b)
-    > If b == true, when a done event occurs, close the connection after all channels have been closed.
+      > If b == true, when a done event occurs, close the connection after all channels have been closed.
   * conn.close(force)
-    > Close the connection. If force is true, force close of any open channels then close this connection.
+      > Close the connection. If force is true, force close of any open channels then close this connection.
 
 ### Channel
 
@@ -70,16 +70,16 @@
 
   * channel.closeOnDone(b)
   * channel.setSaveBuffer(b)
-    > If b is true, then save each line received in a buffer and pass the entire buffer to the done event. Otherwise the done event will not get all the lines, only the last line.  
-    > This is handy when following trailing output from a listen command, where the data could be endless.
+      > If b is true, then save each line received in a buffer and pass the entire buffer to the done event. Otherwise the done event will not get all the lines, only the last line.  
+      > This is handy when following trailing output from a listen command, where the data could be endless.
   * channel.getConnection()
   * channel.getId()
   * channel.write(lines,writeCallback)
-    > Lines can be a string, or an array of strings. If it is a string, then it is split on the EOL character and each resulting line is sent as a separate word (in API speak)
-      If lines is an array, then each element is sent unaltered.
+      > Lines can be a string, or an array of strings. If it is a string, then it is split on the EOL character and each resulting line is sent as a separate word (in API speak)
+        If lines is an array, then each element is sent unaltered.
   * channel.close(force)
-    > Close the channel. If there are any commands still waiting to be executed, they will be completed before closing the channel.
-      If force is TRUE, then the channel is immediately closed. If the channel is running, the cancel command is sent to stop any running listen commands, or potentially long running output.
+      > Close the channel. If there are any commands still waiting to be executed, they will be completed before closing the channel.
+        If force is TRUE, then the channel is immediately closed. If the channel is running, the cancel command is sent to stop any running listen commands, or potentially long running output.
 
 ## Examples
 
