@@ -103,7 +103,7 @@
         });
      });
 
-### Writing the program for the example API conversation on the (Mikrotik Wiki)[http://wiki.mikrotik.com/wiki/API#.2Fcancel.2C_simultaneous_commands]
+### Writing the program for the example API conversation on the [Mikrotik Wiki](http://wiki.mikrotik.com/wiki/API#.2Fcancel.2C_simultaneous_commands)
 
      var api = require('mikronode');
 
