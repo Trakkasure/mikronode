@@ -27,7 +27,10 @@
 
 ## Installation
 
-    $ npm install mikronode
+  Clone this repository into your node_modules directory.
+  - or -
+     $ npm install mikronode
+
 
 ## Features
 
@@ -36,6 +39,11 @@
   * Synchronous execution of commands issued on the same channel.
   * Asynchrounous execution of commands issued on different channels.
   * Focus on high performance
+
+## TODO
+  * Cleanup login section in connect method.
+  * Re-design code to hide internal methods and variables.
+  * Write tests con make sure everything keeps working while making above changes.
 
 ## API
 
