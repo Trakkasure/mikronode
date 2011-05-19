@@ -10,6 +10,6 @@
   },
   "keywords": ["mikrotik", "socket", "api"],
   "repository": "git://github.com/trakkasure/mikronode",
-  "main": "index",
+  "main": "lib/index",
   "engines": { "node": ">= 0.4.5" }
 }
