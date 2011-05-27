@@ -55,7 +55,7 @@
       Connect to the target device. The callback function is called after successful login with the current connection object as its parameter.
   * conn.openChannel(id)  
       Open and return a new channel object. Each channel is a unique command line to the mikrotik, allowing simultaneous execution of commands. The ID parameter is optional.
-  * conn.isConnected()  
+  * conn.connected()  
       Returns true is currently connected to a mikrotik device.
   * conn.closeChannel(id)  
       Closes an open channel. This will call the close method of the channel object.
@@ -63,6 +63,9 @@
       If b == true, when a done event occurs, close the connection after all channels have been closed.
   * conn.close(force)  
       Close the connection. If force is true, force close of any open channels then close this connection.
+  * conn.getHost()
+  * conn.getUser()
+
 
 ### Channel
 
@@ -70,7 +73,7 @@
 
   * channel.closeOnDone(b)
       If b == true, when a done event occurs, close the channel after all commands queued have been executed.
-  * channel.setSaveBuffer(b)  
+  * channel.saveBuffer(b)  
       If b is true, then save each line received in a buffer and pass the entire buffer to the done event. Otherwise the done event will not get all the lines, only the last line.  
       This is handy when following trailing output from a listen command, where the data could be endless.
   * channel.getConnection()
@@ -180,8 +183,6 @@
      });
 
 
-## Associatoins & Affiliations
-  **Mikronode** is in no way associated or affiliated with MikroTik in any way. This code was written in a clean room environment.
   The method *decodeLength* and *encodeString* were written based on code [here on the Mikrotik Wiki](http://wiki.mikrotik.com/wiki/API_PHP_class#Class).
   
 ## License
