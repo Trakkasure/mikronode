@@ -1,14 +1,14 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "contributors": [ 
     { "name": "Brandon Myers", "email": "trakkasure@gmail.com" }
   ],
   "keywords": ["mikrotik", "socket", "api"],
   "repository": "git://github.com/trakkasure/mikronode",
-  "bugs" : "https://github.com/Trakkasure/mikronode/issues"
+  "bugs" : "https://github.com/Trakkasure/mikronode/issues",
   "main": "lib/index",
   "engines": { "node": ">= 0.3.8" }
 }
