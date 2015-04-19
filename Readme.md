@@ -50,7 +50,7 @@
 ### Connection
 
   Calling new api(host,user,pass) returns a connection object.
-
+  * RouterBoard need the connection before execute any comm.
   * conn.connect(callback)  
       Connect to the target device. The callback function is called after successful login with the current connection object as its parameter.
   * conn.openChannel(id)  
