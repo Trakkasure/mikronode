@@ -1,14 +1,23 @@
 {
   "name": "@f5eng/mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "author": "Brandon Myers <trakkasure@gmail.com>",
-  "contributors": [ 
-    { "name": "F5Eng Developers", "email": "developers@fairview5.com" }
+  "contributors": [
+    {
+      "name": "F5Eng Developers",
+      "email": "developers@fairview5.com"
+    }
   ],
-  "keywords": ["mikrotik", "socket", "api"],
+  "keywords": [
+    "mikrotik",
+    "socket",
+    "api"
+  ],
   "repository": "git://github.com/f5eng/mikronode",
-  "bugs" : "https://github.com/f5eng/mikronode/issues",
+  "bugs": "https://github.com/f5eng/mikronode/issues",
   "main": "lib/index",
-  "engines": { "node": ">= 5.0.0" }
+  "engines": {
+    "node": ">= 5.0.0"
+  }
 }
