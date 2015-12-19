@@ -1,14 +1,26 @@
 {
+  "ecmaVersion": 5,
   "plugins": {
+    "guess-types": {
+      
+    },
     "outline": {
       
     },
+    "complete_strings": {
+      
+    },
+    "doc_comment": {
+      "strong": true
+    },
     "node": {
+      
+    },
+    "node-extension": {
       
     }
   },
   "libs": [
-    "ecma5",
-    "ecma6"
+    "ecma5"
   ]
 }

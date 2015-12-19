@@ -33,8 +33,7 @@
 	// useful when your codebase is shared with a big number of developers
 	// with different skill levels. Was all true.
 	 
-	 "esversion": 5,
-	"bitwise" : true, // Prohibit bitwise operators (&, |, ^, etc.).
+	"bitwise" : false, // Prohibit bitwise operators (&, |, ^, etc.).
 	"curly" : true, // Require {} for every new block or scope.
 	"eqeqeq" : true, // Require triple equals i.e. `===`.
 	"forin" : true, // Tolerate `for in` loops without `hasOwnPrototype`.
