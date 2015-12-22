@@ -1333,12 +1333,12 @@
     <div class="nameContainer">
         <h4 class="name" id="getCommandPromise">
             
-            getCommandPromise<span class="signature">(data, <span class="optional">parameters</span>, <span class="optional">DestinationClass</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Promise}</span>
+            getCommandPromise<span class="signature">(data, <span class="optional">parameters</span>, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Promise}</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line959">line 959</a>
+            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line988">line 988</a>
         </div>
         
     </div>
@@ -1371,8 +1371,6 @@
 		<th>Type</th>
 		
 		
-		<th>Default</th>
-		
 		
 		<th class="last">Description</th>
 	</tr>
@@ -1399,10 +1397,6 @@
             </td>
             
             
-                <td class="default">
-                
-                </td>
-            
             
             <td class="description last">
                 
@@ -1411,7 +1405,7 @@
                         
                     
                 
-                <p>Can be a single string with the command and<br>          parameters separated by '\n' or an array of strings with the command in<br>          the first position and the parameters in the rest.</p></td>
+                <p>Can be a single string with the command and<br>          optional parameters separated by '\n' or an array of strings with the<br>          command in the first position and the parameters in the rest.</p></td>
         </tr>
 	
 	
@@ -1425,15 +1419,14 @@
             
                 
 <span class="param-type">object</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
 
 
             
             </td>
             
-            
-                <td class="default">
-                
-                </td>
             
             
             <td class="description last">
@@ -1445,31 +1438,33 @@
                         
                     
                 
-                <p>If the first parameter is a command string, this<br>          object will be treated as the parameters for the string.</p></td>
+                <p>If the first parameter is a command<br>          string, this object will be treated as the parameters for the command.<br>          <p><br>          It can be an array or strings...</p>
+<pre>
+['name=value','name=value'...]
+</pre>
+
+<p>or an Object...</p>
+<pre>
+{'name': 'value', 'name': 'value'...}
+</pre></td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>DestinationClass</code></td>
+                <td class="name"><code>options</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type">object</span>
 
 
             
             </td>
             
-            
-                <td class="default">
-                
-                    object
-                
-                </td>
             
             
             <td class="description last">
@@ -1481,7 +1476,149 @@
                         
                     
                 
-                <p>A class to instantiate for each parsed<br>          item. The properties returned from the device will then be added to the<br>          object. If no destinationClass is specified, a plain Object will be<br>          created and returned.</p></td>
+                <p>A set of options that determine what to do with the<br>          return data (if any). If neither dataClass nor itemClass are provided, the<br>          default behavior will be as though itemClass were set to Object. This will<br>          result in Promise.resolve() being called with an array of plain Objects,<br>          one for each parsed item.</p>
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dontParse</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If true, Promise.resolve() will be called<br>          with the unaltered data array provided by the channel's 'done' event.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>dataClass</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If provided, this class will be instantiated<br>          with the data array provided by the channel's 'done' event as the<br>          constructor's sole argument. Promise.resolve() will then be called with<br>          this object.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>itemClass</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If provided, {mikronode.parseItems} will be<br>          called on the returned data and this class will be instantiated once for<br>          each resulting item. The item object will be passed as the sole argument<br>          to the constructor. An array of itemClass objects will be passed to<br>          Promise.resolve().</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>itemKey</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If provided, instead of an array of parsed<br>          objects being passed to Promise.resolve(), the parsed objects will be<br>          added to a wrapper object using the value of itemKey as the property name.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -2441,7 +2578,7 @@
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Dec 20 2015 18:31:54 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Dec 22 2015 16:29:14 GMT-0700 (MST)
         </footer>
     </div>
 </div>

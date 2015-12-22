@@ -25,7 +25,9 @@
     "grunt-contrib-clean": "*",
     "grunt-jsdoc": "*",
     "jsdoc": "*",
-    "jaguarjs-jsdoc": "*"
+    "jaguarjs-jsdoc": "*",
+    "jsdoc3-plugin-propertyof": "*",
+    "jsdoc-plugin-strip-outer-iife": "*"    
   },
   "dependencies": {
     "debug": "*",

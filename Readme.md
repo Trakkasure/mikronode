@@ -2,7 +2,7 @@
       
   Full-Featured asynchronous Mikrotik API interface for [NodeJS](http://nodejs.org).
   
-		var MikroNode = require('../lib/index.js');
+		var MikroNode = require('mikronode');
 
 		var connection = MikroNode.getConnection(process.argv[2], process.argv[3], process.argv[4]);
 		connection.connect(function(conn) {
@@ -50,17 +50,17 @@
 ## Features
 
   * Channel based communication
-  * Multiple channels can be used at once.
-  * Synchronous execution of commands issued on the same channel.
-  * Asynchrounous execution of commands issued on different channels.
+  * Multiple channels can be used at once
+  * Synchronous execution of commands issued on the same channel
+  * Asynchrounous execution of commands issued on different channels
   * Focus on high performance
-  * ES6 Promise support
+  * ES6 Promise support for Connection and Channel
 
 ## Upgrading from versions < 1.0.0
 
 There are 2 changes that will need to be made...
 	
-	var MikroNode = require('./lib/index.js');			
+	var MikroNode = require('mikronode');			
 	
 	// From	
 			var connection = new MikroNode(...)
@@ -74,26 +74,29 @@ There are 2 changes that will need to be made...
 			connection.closeOnDone = true;			
 			channel.closeOnDone - true;
 				
+Everything else should work as expected.
+
 
 ## TODO
   * Write tests con make sure everything keeps working while making changes.
 
 ## API
-	[API JSDocs](dist/index.html)
+See the [API JSDocs](dist/index.html) in the dist directory.
 	
 ## Promises
 
 Promises are now supported for Connection and Channel.  nodejs versions > 4.0 include
 an ES6 Promise implementation.  For earlier versions, installing es6-promise and running
 require('es6-promise').polyfull() before requiring mikronode will set up Promise support.
+You can also globally export Promise from your favorite ES6 compatable Promise library.
 
 ## Examples
 
-	[Examples (includeing Promise examples)](examples/)
+[Examples (including Promise examples)](examples/)
 
 ### Connect to a Mikrotik, and add an address to ether1
 
-	var MikroNode = require('./lib/index.js');
+	var MikroNode = require('mikronode');
 	
 	var connection = MikroNode.getConnection('192.168.88.1','admin','password');
 	connection.closeOnDone = true;
@@ -112,9 +115,9 @@ require('es6-promise').polyfull() before requiring mikronode will set up Promise
      });
 
 ### Writing the program for the example API conversation on the [Mikrotik Wiki](http://wiki.mikrotik.com/wiki/API#.2Fcancel.2C_simultaneous_commands)
-  DON'T RUN THIS IF YOU'RE CONNECTED VIA ether1!!
+DON'T RUN THIS IF YOU'RE CONNECTED VIA ether1! :)
 
-	var MikroNode = require('./lib/index.js');
+	var MikroNode = require('mikronode');
 	
      connection.connect(function(conn) {
 			
@@ -153,6 +156,7 @@ require('es6-promise').polyfull() before requiring mikronode will set up Promise
      });
 
 ### Simplifying the above by reducing the number of channels.
+DON'T RUN THIS IF YOU'RE CONNECTED VIA ether1! :)
   Notice how the callback embedding is not needed using the syncronous capability.
 
      var MikroNode = require('mikronode');
@@ -187,6 +191,10 @@ require('es6-promise').polyfull() before requiring mikronode will set up Promise
 
 ### A simple Promise scenario
 
+	// If your nodejs installation doesn't have Promise support, uncomment
+	// the following line
+	//require('es6-promise').polyfill();
+	// or globally export Promise from your favorite ES6 compatable Promise library.  
 	var MikroNode = require('mikronode');
      
 	var connection = MikroNode.getConnection(process.argv[2], process.argv[3], process.argv[4], {
