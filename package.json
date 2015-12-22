@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "contributors": [
     {
@@ -27,7 +27,7 @@
     "jsdoc": "*",
     "jaguarjs-jsdoc": "*",
     "jsdoc3-plugin-propertyof": "*",
-    "jsdoc-plugin-strip-outer-iife": "*"    
+    "jsdoc-plugin-strip-outer-iife": "*"
   },
   "dependencies": {
     "debug": "*",
