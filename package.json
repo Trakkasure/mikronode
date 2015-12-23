@@ -1,5 +1,5 @@
 {
-  "name": "mikronode",
+  "name": "@f5eng/mikronode",
   "description": "Mikrotik API implemented in Node",
   "version": "0.3.1",
   "author": "Brandon Myers <trakkasure@gmail.com>",
