@@ -10,7 +10,7 @@ function VLAN(vlan) {
 	Object.assign(this, vlan);
 }
 
-var connection = MikroNode.getConnection(process.argv[2], process.argv[3], process.argv[4], {
+var connection = new MikroNode.Connection(process.argv[2], process.argv[3], process.argv[4], {
 	closeOnDone : true
 });
 

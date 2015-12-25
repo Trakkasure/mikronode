@@ -141,6 +141,8 @@
             
             <span class="subtitle">Methods</span>
             
+                <li data-name="mikronode.Connection.parseItems"><a href="mikronode.Connection.html#.parseItems">parseItems</a></li>
+            
                 <li data-name="mikronode.Connection#closeChannel"><a href="mikronode.Connection.html#closeChannel">closeChannel</a></li>
             
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
@@ -186,8 +188,6 @@
             
                 <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
             
-                <li data-name="mikronode.MikroNode.parseItems"><a href="mikronode.MikroNode.html#.parseItems">parseItems</a></li>
-            
             </ul>
             <ul class="events itemMembers">
             
@@ -203,13 +203,36 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="mikronode.Trap#category"><a href="mikronode.Trap.html#category">category</a></li>
-            
                 <li data-name="mikronode.Trap#channel"><a href="mikronode.Trap.html#channel">channel</a></li>
             
                 <li data-name="mikronode.Trap#channelId"><a href="mikronode.Trap.html#channelId">channelId</a></li>
             
-                <li data-name="mikronode.Trap#message"><a href="mikronode.Trap.html#message">message</a></li>
+                <li data-name="mikronode.Trap#errors"><a href="mikronode.Trap.html#errors">errors</a></li>
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="mikronode.TrapError">
+            <span class="title">
+                <a href="mikronode.TrapError.html">mikronode.TrapError</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            <span class="subtitle">Members</span>
+            
+                <li data-name="mikronode.TrapError#category"><a href="mikronode.TrapError.html#category">category</a></li>
+            
+                <li data-name="mikronode.TrapError#message"><a href="mikronode.TrapError.html#message">message</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -255,7 +278,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line263">line 263</a>
+            <a href="trap.js.html">trap.js</a>, <a href="trap.js.html#line31">line 31</a>
         </div>
         
     </div>
@@ -266,7 +289,7 @@
     
     
     <div class="description">
-        <p>Trap</p>
+        <p>Wrapper for traps sent from device</p>
     </div>
     
 
@@ -387,108 +410,6 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="category">category</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    
-    
-<dl class="details">
-    
-        
-        <h5 class="subsection-title">Properties:</h5>
-        
-        <dl>
-
-<table class="props">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>category</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last"></td>
-        </tr>
-	
-	
-	</tbody>
-</table></dl>
-        
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
         <h4 class="name" id="channel">channel</h4>
     </div>
     
@@ -553,7 +474,7 @@
             
             
             
-            <td class="description last"></td>
+            <td class="description last"><p>The channel originating the trap</p></td>
         </tr>
 	
 	
@@ -655,7 +576,7 @@
             
             
             
-            <td class="description last"></td>
+            <td class="description last"><p>The id of the channel originating the trap</p></td>
         </tr>
 	
 	
@@ -693,7 +614,7 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="message">message</h4>
+        <h4 class="name" id="errors">errors</h4>
     </div>
     
     
@@ -731,13 +652,13 @@
 	
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>errors</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Array.&lt;<a href="mikronode.TrapError.html">mikronode.TrapError</a>></span>
 
 
             
@@ -747,7 +668,7 @@
             
             
             
-            <td class="description last"></td>
+            <td class="description last"><p>Since multiple traps can be recieved from<br>          a single command, this array captures them all.</p></td>
         </tr>
 	
 	
@@ -800,7 +721,7 @@
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Dec 24 2015 10:01:54 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Dec 24 2015 18:51:50 GMT-0700 (MST)
         </footer>
     </div>
 </div>
