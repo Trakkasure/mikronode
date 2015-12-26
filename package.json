@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "license": "MIT",
   "contributors": [
@@ -22,9 +22,9 @@
     "node": ">= 0.10.36"
   },
   "directories": {
-	  "lib": "lib",
-	  "doc": "doc",
-	  "example": "examples"
+    "lib": "lib",
+    "doc": "doc",
+    "example": "examples"
   },
   "devDependencies": {
     "grunt": "*",
