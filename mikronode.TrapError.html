@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Class: MikroNode</title>
+    <title>Class: TrapError</title>
     
     
     
@@ -42,6 +42,33 @@
         <input id="search" type="text" class="form-control input-sm" placeholder="Search Documentations">
     </div>
     <ul class="list">
+    
+        <li class="item" data-name="mikronode">
+            <span class="title">
+                <a href="mikronode.html">mikronode</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="mikronode.getConnection"><a href="mikronode.html#.getConnection">getConnection</a></li>
+            
+                <li data-name="mikronode.parseItems"><a href="mikronode.html#.parseItems">parseItems</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
     
         <li class="item" data-name="mikronode.Channel">
             <span class="title">
@@ -141,6 +168,8 @@
             
             <span class="subtitle">Methods</span>
             
+                <li data-name="mikronode.Connection.parseItems"><a href="mikronode.Connection.html#.parseItems">parseItems</a></li>
+            
                 <li data-name="mikronode.Connection#closeChannel"><a href="mikronode.Connection.html#closeChannel">closeChannel</a></li>
             
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
@@ -169,31 +198,6 @@
             </ul>
         </li>
     
-        <li class="item" data-name="mikronode.MikroNode">
-            <span class="title">
-                <a href="mikronode.MikroNode.html">mikronode.MikroNode</a>
-                
-            </span>
-            <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
-            <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
-            
-                <li data-name="mikronode.MikroNode.parseItems"><a href="mikronode.MikroNode.html#.parseItems">parseItems</a></li>
-            
-            </ul>
-            <ul class="events itemMembers">
-            
-            </ul>
-        </li>
-    
         <li class="item" data-name="mikronode.Trap">
             <span class="title">
                 <a href="mikronode.Trap.html">mikronode.Trap</a>
@@ -203,13 +207,36 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="mikronode.Trap#category"><a href="mikronode.Trap.html#category">category</a></li>
-            
                 <li data-name="mikronode.Trap#channel"><a href="mikronode.Trap.html#channel">channel</a></li>
             
                 <li data-name="mikronode.Trap#channelId"><a href="mikronode.Trap.html#channelId">channelId</a></li>
             
-                <li data-name="mikronode.Trap#message"><a href="mikronode.Trap.html#message">message</a></li>
+                <li data-name="mikronode.Trap#errors"><a href="mikronode.Trap.html#errors">errors</a></li>
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="mikronode.TrapError">
+            <span class="title">
+                <a href="mikronode.TrapError.html">mikronode.TrapError</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            <span class="subtitle">Members</span>
+            
+                <li data-name="mikronode.TrapError#category"><a href="mikronode.TrapError.html#category">category</a></li>
+            
+                <li data-name="mikronode.TrapError#message"><a href="mikronode.TrapError.html#message">message</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -226,7 +253,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="mikronode.MikroNode.html">Class: MikroNode</h1>
+        <h1 class="page-title" data-filename="mikronode.TrapError.html">Class: TrapError</h1>
         
 
 
@@ -235,7 +262,9 @@
     
 <header>
     <h2>
-    MikroNode
+        <span class="ancestors"><a href="mikronode.html">mikronode</a>.</span>
+    
+    TrapError
     </h2>
     
 </header>  
@@ -248,14 +277,14 @@
         
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="MikroNode">
+        <h4 class="name" id="TrapError">
             
-            new mikronode.MikroNode<span class="signature">()</span>
+            new mikronode.TrapError<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line188">line 188</a>
+            <a href="trap.js.html">trap.js</a>, <a href="trap.js.html#line8">line 8</a>
         </div>
         
     </div>
@@ -325,44 +354,29 @@
     
     
     
-    
-    
-        <h3 class="subsection-title">Methods</h3>
+        <h3 class="subsection-title">Members</h3>
         
         <dl>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getConnection">
-            
-            <span class="type-signature static">static</span>mikronode.MikroNode.getConnection<span class="signature">(host, user, password, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="mikronode.Connection.html">mikronode.Connection</a>}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line220">line 220</a>
-        </div>
-        
+        <h4 class="name" id="category">category</h4>
     </div>
-
+    
     
 </dt>
 <dd>
     
     
-    <div class="description">
-        <p>Creates or returns a Connection object.</p>
-    </div>
     
-
-    
-    
-    
-    
+<dl class="details">
     
         
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
 
-<table class="params">
+<table class="props">
     <thead>
 	<tr>
 		
@@ -372,134 +386,8 @@
 		<th>Type</th>
 		
 		
+		<th>Argument</th>
 		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>host</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                    
-                        
-                    
-                
-                <p>The host name or ip address</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>user</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                    
-                        
-                    
-                
-                <p>The user name</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>password</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                    
-                        
-                    
-                
-                <p>The users password</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                
-                
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
 		
 		
 		<th>Default</th>
@@ -514,159 +402,43 @@
 	
         <tr>
             
-                <td class="name"><code>port</code></td>
+                <td class="name"><code>category</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
             
             </td>
             
             
-                <td class="default">
+                <td class="attributes">
                 
-                    8728
+                    &lt;optional><br>
+                
+                    
                 
                 </td>
             
             
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>Sets the port if not the standard 8728.</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>closeOnDone</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-            
             
                 <td class="default">
                 
-                    false
+                    ''
                 
                 </td>
             
             
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>If set, when the last channel closes,<br>          the connection will automatically close.</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>timeout</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-            
-            
-                <td class="default">
-                
-                    0
-                
-                </td>
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>Sets the socket inactivity timeout. A timeout<br>          does not necessarily mean that an error has occurred, especially if you're<br>          only listening for events.</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>closeOnTimeout</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-            
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>If set, when a socket timeout<br>          happens the connection will automatically close.</p></td>
+            <td class="description last"><p>The category of the trap. Some traps don't<br>          populate the category.</p></td>
         </tr>
 	
 	
 	</tbody>
-</table>
-            </td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
+</table></dl>
+        
     
         
     
@@ -692,73 +464,29 @@
 
     
     
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-
-    
-    
-    
-        <h5>Example</h5>
-        
-
-    
-    <pre class="prettyprint">
-var MikroNode = require('mikronode');
-
-var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', {
-    timeout : 4,
-    closeOnDone : true,
-    closeOnTimeout : true,
-});
-</pre>
-    
-
-    
 </dd>
 
         
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".parseItems">
-            
-            <span class="type-signature static">static</span>mikronode.MikroNode.parseItems<span class="signature">(data)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array.&lt;object>}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line230">line 230</a>
-        </div>
-        
+        <h4 class="name" id="message">message</h4>
     </div>
-
+    
     
 </dt>
 <dd>
     
     
-    <div class="description">
-        <p>Parse !re return records into an array of objects</p>
-    </div>
     
-
-    
-    
-    
-    
+<dl class="details">
     
         
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
 
-<table class="params">
+<table class="props">
     <thead>
 	<tr>
 		
@@ -766,6 +494,8 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
 		
 		
 		<th>Type</th>
+		
+		
 		
 		
 		
@@ -778,13 +508,13 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
 	
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>message-</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type">string</span>
 
 
             
@@ -792,18 +522,15 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
             
             
             
-            <td class="description last">
-                
-                <p>The data[] returned from Channel.on('done')</p></td>
+            
+            
+            <td class="description last"><p>The message</p></td>
         </tr>
 	
 	
 	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
+</table></dl>
+        
     
         
     
@@ -829,24 +556,11 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
 
     
     
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-
-
-    
-    
-    
 </dd>
 
         </dl>
+    
+    
     
     
     
@@ -863,7 +577,7 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Dec 22 2015 09:11:39 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
         </footer>
     </div>
 </div>

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Class: Trap</title>
+    <title>Source: index.js</title>
     
     
     
@@ -42,6 +42,33 @@
         <input id="search" type="text" class="form-control input-sm" placeholder="Search Documentations">
     </div>
     <ul class="list">
+    
+        <li class="item" data-name="mikronode">
+            <span class="title">
+                <a href="mikronode.html">mikronode</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="mikronode.getConnection"><a href="mikronode.html#.getConnection">getConnection</a></li>
+            
+                <li data-name="mikronode.parseItems"><a href="mikronode.html#.parseItems">parseItems</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
     
         <li class="item" data-name="mikronode.Channel">
             <span class="title">
@@ -141,6 +168,8 @@
             
             <span class="subtitle">Methods</span>
             
+                <li data-name="mikronode.Connection.parseItems"><a href="mikronode.Connection.html#.parseItems">parseItems</a></li>
+            
                 <li data-name="mikronode.Connection#closeChannel"><a href="mikronode.Connection.html#closeChannel">closeChannel</a></li>
             
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
@@ -169,31 +198,6 @@
             </ul>
         </li>
     
-        <li class="item" data-name="mikronode.MikroNode">
-            <span class="title">
-                <a href="mikronode.MikroNode.html">mikronode.MikroNode</a>
-                
-            </span>
-            <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
-            <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
-            
-                <li data-name="mikronode.MikroNode.parseItems"><a href="mikronode.MikroNode.html#.parseItems">parseItems</a></li>
-            
-            </ul>
-            <ul class="events itemMembers">
-            
-            </ul>
-        </li>
-    
         <li class="item" data-name="mikronode.Trap">
             <span class="title">
                 <a href="mikronode.Trap.html">mikronode.Trap</a>
@@ -203,13 +207,36 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="mikronode.Trap#category"><a href="mikronode.Trap.html#category">category</a></li>
-            
                 <li data-name="mikronode.Trap#channel"><a href="mikronode.Trap.html#channel">channel</a></li>
             
                 <li data-name="mikronode.Trap#channelId"><a href="mikronode.Trap.html#channelId">channelId</a></li>
             
-                <li data-name="mikronode.Trap#message"><a href="mikronode.Trap.html#message">message</a></li>
+                <li data-name="mikronode.Trap#errors"><a href="mikronode.Trap.html#errors">errors</a></li>
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="mikronode.TrapError">
+            <span class="title">
+                <a href="mikronode.TrapError.html">mikronode.TrapError</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            <span class="subtitle">Members</span>
+            
+                <li data-name="mikronode.TrapError#category"><a href="mikronode.TrapError.html#category">category</a></li>
+            
+                <li data-name="mikronode.TrapError#message"><a href="mikronode.TrapError.html#message">message</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -226,572 +253,82 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="mikronode.Trap.html">Class: Trap</h1>
+        <h1 class="page-title" data-filename="index.js.html">Source: index.js</h1>
         
 
 
+    
+    <section>
+        <article>
+            <pre class="prettyprint source "><code>/* Polyfill needed for private-parts */
+if (!('WeakMap' in global)) {
+	global.WeakMap = require('weakmap');
+}
 
-<section>
-    
-<header>
-    <h2>
-    Trap
-    </h2>
-    
-</header>  
+/* Polyfill needed for Connection */
+if (!('Promise' in global)) {
+	global.Promise = require('es6-promise').Promise;
+}
 
-<article>
-    <div class="container-overview">
-    
-    
-    
-        
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="Trap">
-            
-            new mikronode.Trap<span class="signature">(<span class="optional">message</span>)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line263">line 263</a>
-        </div>
-        
-    </div>
+/**
+ * MikroNode
+ * @exports mikronode
+ * @namespace
+ */
 
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Trap</p>
-    </div>
-    
+var Connection = require('./connection');
+module.exports.Connection = Connection;
+var Channel = require('./channel');
+module.exports.Channel = Channel;
 
-    
-    
-    
-    
-    
-        
+/**
+ * Creates or returns a Connection object.
+ * @exports mikronode.getConnection
+ * @function
+ * @static
+ * @param {string} host - The host name or ip address
+ * @param {string} user - The user name
+ * @param {string} password - The users password
+ * @param {object} [options]
+ * @param {number} [options.port=8728] - Sets the port if not the standard 8728.
+ * @param {boolean} [options.closeOnDone=false] - If set, when the last channel closes,
+ *           the connection will automatically close.
+ * @param {number} [options.timeout=0] - Sets the socket inactivity timeout. A timeout
+ *           does not necessarily mean that an error has occurred, especially if you're
+ *           only listening for events.
+ * @param {boolean} [options.closeOnTimeout=false] - If set, when a socket timeout happens
+ *           the connection will automatically close.
+ * @returns {mikronode.Connection}
+ * 
+ * @example
+ * 
+ * &lt;pre>
+ * var MikroNode = require('mikronode');
+ * 
+ * var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', {
+ * 	timeout : 4,
+ * 	closeOnDone : true,
+ * 	closeOnTimeout : true,
+ * });
+ * &lt;/pre>
+ */
+module.exports.getConnection = function getConnection(host, user, password, options) {
+	return new Connection(host, user, password, options);
+};
 
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
+/**
+ * Parse !re return records into an array of objects
+ * @exports mikronode.parseItems
+ * @function
+ * @static
+ * @param {string[]} data - The data[] returned from Channel.on('done')
+ * @returns {object[]} - An Array of objects
+ */
+module.exports.parseItems = Connection.parseItems;
+</code></pre>
+        </article>
+    </section>
 
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                </td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-    
-    </div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        <h3 class="subsection-title">Members</h3>
-        
-        <dl>
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="category">category</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    
-    
-<dl class="details">
-    
-        
-        <h5 class="subsection-title">Properties:</h5>
-        
-        <dl>
-
-<table class="props">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>category</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last"></td>
-        </tr>
-	
-	
-	</tbody>
-</table></dl>
-        
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="channel">channel</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    
-    
-<dl class="details">
-    
-        
-        <h5 class="subsection-title">Properties:</h5>
-        
-        <dl>
-
-<table class="props">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>channel</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="mikronode.Channel.html">mikronode.Channel</a></span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last"></td>
-        </tr>
-	
-	
-	</tbody>
-</table></dl>
-        
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="channelId">channelId</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    
-    
-<dl class="details">
-    
-        
-        <h5 class="subsection-title">Properties:</h5>
-        
-        <dl>
-
-<table class="props">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>channelId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last"></td>
-        </tr>
-	
-	
-	</tbody>
-</table></dl>
-        
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="message">message</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    
-    
-<dl class="details">
-    
-        
-        <h5 class="subsection-title">Properties:</h5>
-        
-        <dl>
-
-<table class="props">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last"></td>
-        </tr>
-	
-	
-	</tbody>
-</table></dl>
-        
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        </dl>
-    
-    
-    
-    
-    
-    
-    
-</article>
-
-</section>  
 
 
 
@@ -800,7 +337,7 @@
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Dec 22 2015 09:11:39 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
         </footer>
     </div>
 </div>

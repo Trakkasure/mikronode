@@ -43,6 +43,33 @@
     </div>
     <ul class="list">
     
+        <li class="item" data-name="mikronode">
+            <span class="title">
+                <a href="mikronode.html">mikronode</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="mikronode.getConnection"><a href="mikronode.html#.getConnection">getConnection</a></li>
+            
+                <li data-name="mikronode.parseItems"><a href="mikronode.html#.parseItems">parseItems</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="mikronode.Channel">
             <span class="title">
                 <a href="mikronode.Channel.html">mikronode.Channel</a>
@@ -141,6 +168,8 @@
             
             <span class="subtitle">Methods</span>
             
+                <li data-name="mikronode.Connection.parseItems"><a href="mikronode.Connection.html#.parseItems">parseItems</a></li>
+            
                 <li data-name="mikronode.Connection#closeChannel"><a href="mikronode.Connection.html#closeChannel">closeChannel</a></li>
             
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
@@ -169,31 +198,6 @@
             </ul>
         </li>
     
-        <li class="item" data-name="mikronode.MikroNode">
-            <span class="title">
-                <a href="mikronode.MikroNode.html">mikronode.MikroNode</a>
-                
-            </span>
-            <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
-            <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
-            
-                <li data-name="mikronode.MikroNode.parseItems"><a href="mikronode.MikroNode.html#.parseItems">parseItems</a></li>
-            
-            </ul>
-            <ul class="events itemMembers">
-            
-            </ul>
-        </li>
-    
         <li class="item" data-name="mikronode.Trap">
             <span class="title">
                 <a href="mikronode.Trap.html">mikronode.Trap</a>
@@ -203,13 +207,36 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="mikronode.Trap#category"><a href="mikronode.Trap.html#category">category</a></li>
-            
                 <li data-name="mikronode.Trap#channel"><a href="mikronode.Trap.html#channel">channel</a></li>
             
                 <li data-name="mikronode.Trap#channelId"><a href="mikronode.Trap.html#channelId">channelId</a></li>
             
-                <li data-name="mikronode.Trap#message"><a href="mikronode.Trap.html#message">message</a></li>
+                <li data-name="mikronode.Trap#errors"><a href="mikronode.Trap.html#errors">errors</a></li>
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="mikronode.TrapError">
+            <span class="title">
+                <a href="mikronode.TrapError.html">mikronode.TrapError</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            <span class="subtitle">Members</span>
+            
+                <li data-name="mikronode.TrapError#category"><a href="mikronode.TrapError.html#category">category</a></li>
+            
+                <li data-name="mikronode.TrapError#message"><a href="mikronode.TrapError.html#message">message</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -291,7 +318,8 @@ connection.getConnectPromise().then(function(conn) {
 </ul>
 <h2>Features</h2><ul>
 <li>Channel based communication</li>
-<li>Multiple channels can be used at once</li>
+<li>Multiple Connections can be used in parallel in the same Node process</li>
+<li>Multiple Channels can be used in parallel on the same Connection</li>
 <li>Synchronous execution of commands issued on the same channel</li>
 <li>Asynchrounous execution of commands issued on different channels</li>
 <li>Focus on high performance</li>
@@ -304,18 +332,21 @@ connection.getConnectPromise().then(function(conn) {
         var connection = new MikroNode(...)
 // To
         var connection = MikroNode.getConnection(...)
+// or
+        var connection = new MikroNode.Connection(...)
 
 // From
         connection.closeOnDone(true);            
         channel.closeOnDone(true);
 // To
         connection.closeOnDone = true;            
-        channel.closeOnDone - true;</code></pre><p>Everything else should work as expected.</p>
+        channel.closeOnDone = true;</code></pre><p>Everything else should work as expected.</p>
 <h2>TODO</h2><ul>
-<li>Write tests con make sure everything keeps working while making changes.</li>
+<li>TLS Support</li>
 </ul>
 <h2>API</h2><p>See the <a href="dist/index.html">API JSDocs</a> in the dist directory.</p>
 <h2>Promises</h2><p>Promises are now supported for Connection and Channel.  nodejs versions &gt; 4.0 include<br>an ES6 Promise implementation.  For earlier versions, installing es6-promise and running<br>require('es6-promise').polyfull() before requiring mikronode will set up Promise support.<br>You can also globally export Promise from your favorite ES6 compatable Promise library.</p>
+<h2>Tests</h2><p>The <a href="test/">test</a> directory contains a test that exercises all functionality including<br>Promises and listens/cancels.</p>
 <h2>Examples</h2><p><a href="examples/">Examples (including Promise examples)</a></p>
 <h3>Connect to a Mikrotik, and add an address to ether1</h3><pre class="prettyprint source"><code>var MikroNode = require('mikronode');
 
@@ -417,7 +448,7 @@ connection.getConnectPromise().then(function(conn) {
     });
 });</code></pre><p>  The methods <em>decodeLength</em> and <em>encodeString</em> were written based on code <a href="http://wiki.mikrotik.com/wiki/API_PHP_class#Class">here on the Mikrotik Wiki</a>.</p>
 <h2>License</h2><p>(The MIT License)</p>
-<p>Copyright (c) 2011 Brandon Myers <a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#x74;&#114;&#97;&#107;&#x6b;&#x61;&#x73;&#117;&#114;&#x65;&#x40;&#103;&#x6d;&#97;&#105;&#108;&#x2e;&#x63;&#111;&#x6d;">&#x74;&#114;&#97;&#107;&#x6b;&#x61;&#x73;&#117;&#114;&#x65;&#x40;&#103;&#x6d;&#97;&#105;&#108;&#x2e;&#x63;&#111;&#x6d;</a></p>
+<p>Copyright (c) 2011 Brandon Myers <a href="&#109;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#x74;&#114;&#x61;&#107;&#x6b;&#97;&#115;&#x75;&#x72;&#101;&#x40;&#x67;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#111;&#x6d;">&#x74;&#114;&#x61;&#107;&#x6b;&#97;&#115;&#x75;&#x72;&#101;&#x40;&#x67;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#111;&#x6d;</a></p>
 <p>Permission is hereby granted, free of charge, to any person obtaining<br>a copy of this software and associated documentation files (the<br>'Software'), to deal in the Software without restriction, including<br>without limitation the rights to use, copy, modify, merge, publish,<br>distribute, sublicense, and/or sell copies of the Software, and to<br>permit persons to whom the Software is furnished to do so, subject to<br>the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be<br>included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,<br>EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF<br>MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.<br>IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY<br>CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,<br>TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE<br>SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></article>
@@ -431,7 +462,7 @@ connection.getConnectPromise().then(function(conn) {
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Dec 22 2015 09:11:39 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
         </footer>
     </div>
 </div>

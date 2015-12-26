@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Module: mikronode</title>
+    <title>Source: trap.js</title>
     
     
     
@@ -42,6 +42,33 @@
         <input id="search" type="text" class="form-control input-sm" placeholder="Search Documentations">
     </div>
     <ul class="list">
+    
+        <li class="item" data-name="mikronode">
+            <span class="title">
+                <a href="mikronode.html">mikronode</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="mikronode.getConnection"><a href="mikronode.html#.getConnection">getConnection</a></li>
+            
+                <li data-name="mikronode.parseItems"><a href="mikronode.html#.parseItems">parseItems</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
     
         <li class="item" data-name="mikronode.Channel">
             <span class="title">
@@ -141,6 +168,8 @@
             
             <span class="subtitle">Methods</span>
             
+                <li data-name="mikronode.Connection.parseItems"><a href="mikronode.Connection.html#.parseItems">parseItems</a></li>
+            
                 <li data-name="mikronode.Connection#closeChannel"><a href="mikronode.Connection.html#closeChannel">closeChannel</a></li>
             
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
@@ -169,31 +198,6 @@
             </ul>
         </li>
     
-        <li class="item" data-name="mikronode.MikroNode">
-            <span class="title">
-                <a href="mikronode.MikroNode.html">mikronode.MikroNode</a>
-                
-            </span>
-            <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
-            <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
-            
-                <li data-name="mikronode.MikroNode.parseItems"><a href="mikronode.MikroNode.html#.parseItems">parseItems</a></li>
-            
-            </ul>
-            <ul class="events itemMembers">
-            
-            </ul>
-        </li>
-    
         <li class="item" data-name="mikronode.Trap">
             <span class="title">
                 <a href="mikronode.Trap.html">mikronode.Trap</a>
@@ -203,13 +207,36 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="mikronode.Trap#category"><a href="mikronode.Trap.html#category">category</a></li>
-            
                 <li data-name="mikronode.Trap#channel"><a href="mikronode.Trap.html#channel">channel</a></li>
             
                 <li data-name="mikronode.Trap#channelId"><a href="mikronode.Trap.html#channelId">channelId</a></li>
             
-                <li data-name="mikronode.Trap#message"><a href="mikronode.Trap.html#message">message</a></li>
+                <li data-name="mikronode.Trap#errors"><a href="mikronode.Trap.html#errors">errors</a></li>
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="mikronode.TrapError">
+            <span class="title">
+                <a href="mikronode.TrapError.html">mikronode.TrapError</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            <span class="subtitle">Members</span>
+            
+                <li data-name="mikronode.TrapError#category"><a href="mikronode.TrapError.html#category">category</a></li>
+            
+                <li data-name="mikronode.TrapError#message"><a href="mikronode.TrapError.html#message">message</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -226,93 +253,73 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="module-mikronode.html">Module: mikronode</h1>
+        <h1 class="page-title" data-filename="trap.js.html">Source: trap.js</h1>
         
 
 
+    
+    <section>
+        <article>
+            <pre class="prettyprint source "><code>module.exports = (function() {
 
-<section>
-    
-<header>
-    <h2>
-    mikronode
-    </h2>
-    
-</header>  
+	/**
+	 * 
+	 * @exports mikronode.TrapError
+	 * @class
+	 */
+	function TrapError() {
+		/**
+		 * @property {string} [category=''] - The category of the trap. Some traps don't
+		 *           populate the category.
+		 */
+		this.category = '';
+		/**
+		 * @property {string} message- The message
+		 */
+		this.message = '';
+		this.toString = function() {
+			return this.message + '(' + this.category + ')';
+		};
+	}
 
-<article>
-    <div class="container-overview">
-    
-    
-    
-        
-            <div class="description"><p>MikroNode</p></div>
-        
-        
-        
-<dl class="details">
-    
-        
-    
-    
-    
+	/**
+	 * Wrapper for traps sent from device
+	 * 
+	 * @exports mikronode.Trap
+	 * @class
+	 * @param {string} [message]
+	 */
+	function Trap() {
+		/**
+		 * @property {mikronode.TrapError[]} errors - Since multiple traps can be recieved
+		 *           from a single command, this array captures them all.
+		 */
+		this.errors = [ new TrapError() ];
+		/**
+		 * @property {string} [channelId] - The id of the channel originating the trap
+		 */
+		this.channelId = '';
+		/**
+		 * @property {mikronode.Channel} [channel] - The channel originating the trap
+		 */
+		this.channel = null;
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
+		this.toString = function() {
+			return this.errors[0].toString();
+		};
+	}
 
-        
-        
-    
-    </div>
-    
-    
-    
-    
-    
-    
-        <h3 class="subsection-title">Requires</h3>
-        
-        <ul>
-            <li>module:net</li>
-        
-            <li>module:events</li>
-        
-            <li>module:crypto</li>
-        
-            <li>module:util</li>
-        
-            <li>module:debug</li>
-        </ul>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</article>
+	Trap.prototype.addTrapError = function() {
+		this.errors.push(new TrapError());
+	};
 
-</section>  
+	return Trap;
+
+})();
+</code></pre>
+        </article>
+    </section>
+
 
 
 
@@ -321,7 +328,7 @@
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Dec 22 2015 09:11:39 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
         </footer>
     </div>
 </div>

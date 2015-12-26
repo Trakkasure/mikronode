@@ -43,6 +43,33 @@
     </div>
     <ul class="list">
     
+        <li class="item" data-name="mikronode">
+            <span class="title">
+                <a href="mikronode.html">mikronode</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="mikronode.getConnection"><a href="mikronode.html#.getConnection">getConnection</a></li>
+            
+                <li data-name="mikronode.parseItems"><a href="mikronode.html#.parseItems">parseItems</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="mikronode.Channel">
             <span class="title">
                 <a href="mikronode.Channel.html">mikronode.Channel</a>
@@ -141,6 +168,8 @@
             
             <span class="subtitle">Methods</span>
             
+                <li data-name="mikronode.Connection.parseItems"><a href="mikronode.Connection.html#.parseItems">parseItems</a></li>
+            
                 <li data-name="mikronode.Connection#closeChannel"><a href="mikronode.Connection.html#closeChannel">closeChannel</a></li>
             
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
@@ -169,31 +198,6 @@
             </ul>
         </li>
     
-        <li class="item" data-name="mikronode.MikroNode">
-            <span class="title">
-                <a href="mikronode.MikroNode.html">mikronode.MikroNode</a>
-                
-            </span>
-            <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
-            <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
-            
-                <li data-name="mikronode.MikroNode.parseItems"><a href="mikronode.MikroNode.html#.parseItems">parseItems</a></li>
-            
-            </ul>
-            <ul class="events itemMembers">
-            
-            </ul>
-        </li>
-    
         <li class="item" data-name="mikronode.Trap">
             <span class="title">
                 <a href="mikronode.Trap.html">mikronode.Trap</a>
@@ -203,13 +207,36 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="mikronode.Trap#category"><a href="mikronode.Trap.html#category">category</a></li>
-            
                 <li data-name="mikronode.Trap#channel"><a href="mikronode.Trap.html#channel">channel</a></li>
             
                 <li data-name="mikronode.Trap#channelId"><a href="mikronode.Trap.html#channelId">channelId</a></li>
             
-                <li data-name="mikronode.Trap#message"><a href="mikronode.Trap.html#message">message</a></li>
+                <li data-name="mikronode.Trap#errors"><a href="mikronode.Trap.html#errors">errors</a></li>
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="mikronode.TrapError">
+            <span class="title">
+                <a href="mikronode.TrapError.html">mikronode.TrapError</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            <span class="subtitle">Members</span>
+            
+                <li data-name="mikronode.TrapError#category"><a href="mikronode.TrapError.html#category">category</a></li>
+            
+                <li data-name="mikronode.TrapError#message"><a href="mikronode.TrapError.html#message">message</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -235,6 +262,8 @@
     
 <header>
     <h2>
+        <span class="ancestors"><a href="mikronode.html">mikronode</a>.</span>
+    
     Connection
     </h2>
     
@@ -255,7 +284,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line338">line 338</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line88">line 88</a>
         </div>
         
     </div>
@@ -266,8 +295,8 @@
     
     
     <div class="description">
-        <p>Connection</p>
-<p><p><br>This class shouldn't be instantiated directly.</p>
+        <p><strong>An instance of Connection is fully self-contained. You can have as many open<br>in parallel in the same node process as your environment can handle.</strong></p>
+<p>
     </div>
     
 
@@ -629,6 +658,22 @@
     
     
     
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">
+var MikroNode = require('mikronode');
+
+var connection = new MikroNode.Connection('192.168.88.1', 'admin', 'mypassword', {
+    timeout : 4,
+    closeOnDone : true,
+    closeOnTimeout : true,
+});
+</pre>
+    
+
+    
 </dd>
 
     
@@ -975,6 +1020,127 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".parseItems">
+            
+            <span class="type-signature static">static</span>mikronode.Connection.parseItems<span class="signature">(data)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Array.&lt;object>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line193">line 193</a>
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Parse !re return records into an array of objects</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>The data[] returned from Channel.on('done')</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="closeChannel">
             
             closeChannel<span class="signature">(id)</span>
@@ -982,7 +1148,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line839">line 839</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line570">line 570</a>
         </div>
         
     </div>
@@ -1098,7 +1264,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line635">line 635</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line413">line 413</a>
         </div>
         
     </div>
@@ -1115,9 +1281,6 @@
 
     
     
-    
-        <h5>This:</h5>
-        <ul><li><a href="mikronode.Connection.html">mikronode.Connection</a></li></ul>
     
     
     
@@ -1217,7 +1380,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line823">line 823</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line554">line 554</a>
         </div>
         
     </div>
@@ -1338,7 +1501,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line988">line 988</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line770">line 770</a>
         </div>
         
     </div>
@@ -1349,7 +1512,7 @@
     
     
     <div class="description">
-        <p>Returnes a Promise of a completed command.</p>
+        <p>** Returnes a Promise of a completed command.</p>
 <p><p><br>The promise will resolve when the command completes or reject if there's an error or<br>trap. If resolved, the result will be an array of instances of DestinationClass (or<br>Object, if no destination class was specified). If rejected, the result will be an<br>Error if there was a socket error or timeout, or a <a href="mikronode.Trap.html"><code>mikronode.Trap</code></a> if the<br>command failed on the device.</p>
     </div>
     
@@ -1489,12 +1652,50 @@
 		<th>Type</th>
 		
 		
+		<th>Default</th>
+		
 		
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 	
 	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>closeOnDone</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If true, the channel will<br>          automatically close when the command completes.</p></td>
+        </tr>
+	
 	
 	
         <tr>
@@ -1512,6 +1713,12 @@
             </td>
             
             
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
             
             <td class="description last">
                 
@@ -1522,7 +1729,7 @@
                         
                     
                 
-                <p>If true, Promise.resolve() will be called<br>          with the unaltered data array provided by the channel's 'done' event.</p></td>
+                <p>If true, Promise.resolve() will be<br>          called with the unaltered data array provided by the channel's 'done'<br>          event. with the unaltered data array provided by the channel's 'done'<br>          event.</p></td>
         </tr>
 	
 	
@@ -1541,6 +1748,10 @@
             
             </td>
             
+            
+                <td class="default">
+                
+                </td>
             
             
             <td class="description last">
@@ -1572,6 +1783,10 @@
             </td>
             
             
+                <td class="default">
+                
+                </td>
+            
             
             <td class="description last">
                 
@@ -1601,6 +1816,10 @@
             
             </td>
             
+            
+                <td class="default">
+                
+                </td>
             
             
             <td class="description last">
@@ -1665,8 +1884,41 @@
     
 
 
+<h5>Returns:</h5>
+promise will have a channel property added which will be set<br>        to the channel used to fulfill the promise.
+<br />
+
     
     
+    
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">
+
+function Interface(intf) {
+    var _this = this;
+    Object.keys(intf).forEach(function(key) {
+        _this[key] = intf[key];
+    });
+}
+
+var chan1Promise = conn.getCommandPromise('/interface/print', {
+    itemClass : Interface,
+    itemKey : 'name'
+});
+
+chan1Promise.then(function(values){
+// It succeeded. You'll have a hash of Interfaces keyed by interface name.
+});
+
+chan1Promise.catch(function(result){
+// It failed. result will tell you why.
+});
+</pre>
+    
+
     
 </dd>
 
@@ -1681,7 +1933,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line913">line 913</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line659">line 659</a>
         </div>
         
     </div>
@@ -1746,6 +1998,25 @@
     
     
     
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">
+var MikroNode = require('mikronode');
+
+var connection = new MikroNode.Connection(process.argv[2], process.argv[3], process.argv[4], {
+    closeOnDone : true
+});
+
+var connPromise = connection.getConnectPromise().then(function resolve(conn) {
+// You now have an open, authenticated connection
+// To issue some commands see <a href="mikronode.Connection.html#getCommandPromise"><code>getCommandPromise</code></a>
+});
+</pre>
+    
+
+    
 </dd>
 
         
@@ -1759,7 +2030,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line799">line 799</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line530">line 530</a>
         </div>
         
     </div>
@@ -1901,7 +2172,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line623">line 623</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line402">line 402</a>
         </div>
         
     </div>
@@ -2019,7 +2290,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line300">line 300</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line38">line 38</a>
         </div>
         
     </div>
@@ -2141,7 +2412,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line286">line 286</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line24">line 24</a>
         </div>
         
     </div>
@@ -2286,7 +2557,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line293">line 293</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line31">line 31</a>
         </div>
         
     </div>
@@ -2454,7 +2725,7 @@
     
         
         <div class="tag-source">
-            <a href="-_usr_src_node_modules_mikronode_lib_index.js.html">/usr/src/node/modules/mikronode/lib/index.js</a>, <a href="-_usr_src_node_modules_mikronode_lib_index.js.html#line307">line 307</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line45">line 45</a>
         </div>
         
     </div>
@@ -2578,7 +2849,7 @@
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Dec 22 2015 09:11:39 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
         </footer>
     </div>
 </div>
