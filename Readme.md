@@ -86,12 +86,18 @@ Everything else should work as expected.
 ## API
 See the [API JSDocs](dist/index.html) in the dist directory.
 	
-## Promises
+## Notes for Node < 4.0.0
 
-Promises are now supported for Connection and Channel.  nodejs versions > 4.0 include
-an ES6 Promise implementation.  For earlier versions, installing es6-promise and running
-require('es6-promise').polyfull() before requiring mikronode will set up Promise support.
-You can also globally export Promise from your favorite ES6 compatable Promise library.
+MikroNode requires 2 ES6 features that appeared in Node 4.0.0: Promises and WeakMaps.  If 
+you're running an earlier version of Node and MikroNode can't find those symbols, it will
+attempt to load them from the 'es6-promise' and 'weakmap' packages respectively.  If you wish
+to use other packages to supply those symbols, require them before requiring mikronode and
+set the global symbols.
+
+	global.WeakMap = require('some-weakmap-polyfill').WeakMap;
+	global.Promise = require('some-promise-polyfill').Promise;
+	var MikroNode = require('mikronode');
+
 
 ## Tests
 The [test](test/) directory contains a test that exercises all functionality including

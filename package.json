@@ -1,5 +1,5 @@
 {
-  "name": "mikronode",
+  "name": "@f5eng/mikronode",
   "description": "Mikrotik API implemented in Node",
   "version": "1.0.2",
   "author": "Brandon Myers <trakkasure@gmail.com>",
@@ -15,8 +15,8 @@
     "socket",
     "api"
   ],
-  "repository": "git://github.com/trakkasure/mikronode",
-  "bugs": "https://github.com/trakkasure/mikronode/issues",
+  "repository": "git://github.com/f5eng/mikronode",
+  "bugs": "https://github.com/f5eng/mikronode/issues",
   "main": "lib/index",
   "engines": {
     "node": ">= 0.10.36"
