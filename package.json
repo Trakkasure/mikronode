@@ -2,14 +2,9 @@
   "name": "@f5eng/mikronode",
   "description": "Mikrotik API implemented in Node",
   "version": "1.0.2",
-  "author": "Brandon Myers <trakkasure@gmail.com>",
+  "author": "George Joseph <developers@fairview5.com>",
+  "homepage": "http://f5eng.github.io/mikronode/doc/index.html",
   "license": "MIT",
-  "contributors": [
-    {
-      "name": "F5Eng Developers",
-      "email": "developers@fairview5.com"
-    }
-  ],
   "keywords": [
     "mikrotik",
     "socket",
