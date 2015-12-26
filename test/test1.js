@@ -1,21 +1,25 @@
-/**
- * http://usejsdoc.org/
- */
-// src interface
 /* jshint undef: true */
 /* globals Promise */
+
 var MikroNode = require('../lib/index.js');
 
 function VLAN(vlan) {
-	Object.assign(this, vlan);
+	Object.keys(vlan).forEach(function(k) {
+		this[k] = vlan[k];
+	});
 }
 
 var connection = new MikroNode.Connection(process.argv[2], process.argv[3], process.argv[4], {
-	closeOnDone : true
+	closeOnDone : true,
+	closeOnTimeout : true,
+	timeout : 4
 });
 
-var connPromise = connection.getConnectPromise().then(function(conn) {
+var connPromise = connection.getConnectPromise().then(function connected(conn) {
 	getVlans();
+}, function failed(result) {
+	console.log(result);
+	process.exit(99);
 });
 
 function getVlans() {
@@ -88,12 +92,13 @@ function listen() {
 	c.closeOnDone = true;
 	c.write('/ip/address/listen', function(channel) {
 		console.log('Listening to ip changes.');
+
 		console.log('Press CTRL-C to stop listening.');
 		channel.on('done', function() {
 			console.log('ip listen done');
 		});
 		channel.on('trap', function(result) {
-			console.log(result + ': DONE!!');
+			console.log(result + ': SUCCESS!!');
 		});
 		channel.on('read', function(data) {
 			console.log('Heard: ' + data);
