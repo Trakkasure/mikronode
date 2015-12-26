@@ -1,8 +1,9 @@
 {
-  "name": "@f5eng/mikronode",
+  "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
   "version": "1.0.1",
   "author": "Brandon Myers <trakkasure@gmail.com>",
+  "license": "MIT",
   "contributors": [
     {
       "name": "F5Eng Developers",
@@ -18,7 +19,12 @@
   "bugs": "https://github.com/trakkasure/mikronode/issues",
   "main": "lib/index",
   "engines": {
-    "node": ">= 5.0.0"
+    "node": ">= 0.10.36"
+  },
+  "directories": {
+	  "lib": "lib",
+	  "doc": "doc",
+	  "example": "examples"
   },
   "devDependencies": {
     "grunt": "*",
@@ -32,5 +38,9 @@
   "dependencies": {
     "debug": "*",
     "private-parts": "*"
+  },
+  "optionalDependencies": {
+    "weakmap": "*",
+    "es6-promise": "*"
   }
 }

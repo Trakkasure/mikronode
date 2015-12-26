@@ -43,6 +43,33 @@
     </div>
     <ul class="list">
     
+        <li class="item" data-name="mikronode">
+            <span class="title">
+                <a href="mikronode.html">mikronode</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="mikronode.getConnection"><a href="mikronode.html#.getConnection">getConnection</a></li>
+            
+                <li data-name="mikronode.parseItems"><a href="mikronode.html#.parseItems">parseItems</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="mikronode.Channel">
             <span class="title">
                 <a href="mikronode.Channel.html">mikronode.Channel</a>
@@ -171,29 +198,6 @@
             </ul>
         </li>
     
-        <li class="item" data-name="mikronode.MikroNode">
-            <span class="title">
-                <a href="mikronode.MikroNode.html">mikronode.MikroNode</a>
-                
-            </span>
-            <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
-            <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="mikronode.MikroNode.getConnection"><a href="mikronode.MikroNode.html#.getConnection">getConnection</a></li>
-            
-            </ul>
-            <ul class="events itemMembers">
-            
-            </ul>
-        </li>
-    
         <li class="item" data-name="mikronode.Trap">
             <span class="title">
                 <a href="mikronode.Trap.html">mikronode.Trap</a>
@@ -258,6 +262,8 @@
     
 <header>
     <h2>
+        <span class="ancestors"><a href="mikronode.html">mikronode</a>.</span>
+    
     Connection
     </h2>
     
@@ -278,7 +284,7 @@
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line79">line 79</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line88">line 88</a>
         </div>
         
     </div>
@@ -289,8 +295,8 @@
     
     
     <div class="description">
-        <p>Connection</p>
-<p><p><br>This class shouldn't be instantiated directly.</p>
+        <p><strong>An instance of Connection is fully self-contained. You can have as many open<br>in parallel in the same node process as your environment can handle.</strong></p>
+<p>
     </div>
     
 
@@ -652,6 +658,22 @@
     
     
     
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">
+var MikroNode = require('mikronode');
+
+var connection = new MikroNode.Connection('192.168.88.1', 'admin', 'mypassword', {
+    timeout : 4,
+    closeOnDone : true,
+    closeOnTimeout : true,
+});
+</pre>
+    
+
+    
 </dd>
 
     
@@ -1005,7 +1027,7 @@
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line182">line 182</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line193">line 193</a>
         </div>
         
     </div>
@@ -1126,7 +1148,7 @@
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line596">line 596</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line570">line 570</a>
         </div>
         
     </div>
@@ -1242,7 +1264,7 @@
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line392">line 392</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line413">line 413</a>
         </div>
         
     </div>
@@ -1259,9 +1281,6 @@
 
     
     
-    
-        <h5>This:</h5>
-        <ul><li><a href="mikronode.Connection.html">mikronode.Connection</a></li></ul>
     
     
     
@@ -1361,7 +1380,7 @@
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line580">line 580</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line554">line 554</a>
         </div>
         
     </div>
@@ -1482,7 +1501,7 @@
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line750">line 750</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line770">line 770</a>
         </div>
         
     </div>
@@ -1493,7 +1512,7 @@
     
     
     <div class="description">
-        <p>Returnes a Promise of a completed command.</p>
+        <p>** Returnes a Promise of a completed command.</p>
 <p><p><br>The promise will resolve when the command completes or reject if there's an error or<br>trap. If resolved, the result will be an array of instances of DestinationClass (or<br>Object, if no destination class was specified). If rejected, the result will be an<br>Error if there was a socket error or timeout, or a <a href="mikronode.Trap.html"><code>mikronode.Trap</code></a> if the<br>command failed on the device.</p>
     </div>
     
@@ -1866,11 +1885,40 @@
 
 
 <h5>Returns:</h5>
-The promise will have a channel property added which will be<br>         set to the channel used to fulfill the promise.
+promise will have a channel property added which will be set<br>        to the channel used to fulfill the promise.
 <br />
 
     
     
+    
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">
+
+function Interface(intf) {
+    var _this = this;
+    Object.keys(intf).forEach(function(key) {
+        _this[key] = intf[key];
+    });
+}
+
+var chan1Promise = conn.getCommandPromise('/interface/print', {
+    itemClass : Interface,
+    itemKey : 'name'
+});
+
+chan1Promise.then(function(values){
+// It succeeded. You'll have a hash of Interfaces keyed by interface name.
+});
+
+chan1Promise.catch(function(result){
+// It failed. result will tell you why.
+});
+</pre>
+    
+
     
 </dd>
 
@@ -1885,7 +1933,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line670">line 670</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line659">line 659</a>
         </div>
         
     </div>
@@ -1950,6 +1998,25 @@ The promise will have a channel property added which will be<br>         set to 
     
     
     
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint">
+var MikroNode = require('mikronode');
+
+var connection = new MikroNode.Connection(process.argv[2], process.argv[3], process.argv[4], {
+    closeOnDone : true
+});
+
+var connPromise = connection.getConnectPromise().then(function resolve(conn) {
+// You now have an open, authenticated connection
+// To issue some commands see <a href="mikronode.Connection.html#getCommandPromise"><code>getCommandPromise</code></a>
+});
+</pre>
+    
+
+    
 </dd>
 
         
@@ -1963,7 +2030,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line556">line 556</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line530">line 530</a>
         </div>
         
     </div>
@@ -2105,7 +2172,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line380">line 380</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line402">line 402</a>
         </div>
         
     </div>
@@ -2223,7 +2290,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line41">line 41</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line38">line 38</a>
         </div>
         
     </div>
@@ -2345,7 +2412,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line27">line 27</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line24">line 24</a>
         </div>
         
     </div>
@@ -2490,7 +2557,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line34">line 34</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line31">line 31</a>
         </div>
         
     </div>
@@ -2658,7 +2725,7 @@ The promise will have a channel property added which will be<br>         set to 
     
         
         <div class="tag-source">
-            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line48">line 48</a>
+            <a href="connection.js.html">connection.js</a>, <a href="connection.js.html#line45">line 45</a>
         </div>
         
     </div>
@@ -2782,7 +2849,7 @@ The promise will have a channel property added which will be<br>         set to 
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Dec 24 2015 18:51:50 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
         </footer>
     </div>
 </div>

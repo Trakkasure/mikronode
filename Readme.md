@@ -50,7 +50,8 @@
 ## Features
 
   * Channel based communication
-  * Multiple channels can be used at once
+  * Multiple Connections can be used in parallel in the same Node process
+  * Multiple Channels can be used in parallel on the same Connection
   * Synchronous execution of commands issued on the same channel
   * Asynchrounous execution of commands issued on different channels
   * Focus on high performance
@@ -66,19 +67,21 @@ There are 2 changes that will need to be made...
 			var connection = new MikroNode(...)
 	// To
 			var connection = MikroNode.getConnection(...)
+	// or
+			var connection = new MikroNode.Connection(...)
 			
 	// From
 			connection.closeOnDone(true);			
 			channel.closeOnDone(true);
 	// To
 			connection.closeOnDone = true;			
-			channel.closeOnDone - true;
+			channel.closeOnDone = true;
 				
 Everything else should work as expected.
 
 
 ## TODO
-  * Write tests con make sure everything keeps working while making changes.
+  * TLS Support
 
 ## API
 See the [API JSDocs](dist/index.html) in the dist directory.
@@ -90,6 +93,10 @@ an ES6 Promise implementation.  For earlier versions, installing es6-promise and
 require('es6-promise').polyfull() before requiring mikronode will set up Promise support.
 You can also globally export Promise from your favorite ES6 compatable Promise library.
 
+## Tests
+The [test](test/) directory contains a test that exercises all functionality including
+Promises and listens/cancels.
+ 
 ## Examples
 
 [Examples (including Promise examples)](examples/)

@@ -3,25 +3,9 @@
  */
 module.exports = function(grunt) {
 	var path = require('path');
-	var DOC_PATH = 'dist';
-	var SOURCE_PATH = 'lib';
+	var DOC_PATH = 'doc';
 	grunt.initConfig({
 		pkg : grunt.file.readJSON('package.json'),
-
-		connect : {
-			options : {
-				hostname : '*'
-			},
-			docs : {
-				options : {
-					port : 8000,
-					base : DOC_PATH,
-					middleware : function(connect, options) {
-						return [ require('connect-livereload')(), connect.static(path.resolve(options.base)) ];
-					}
-				}
-			}
-		},
 
 		clean : {
 			docs : {
@@ -31,10 +15,7 @@ module.exports = function(grunt) {
 
 		jsdoc : {
 			docs : {
-				src : [ SOURCE_PATH + '/**/*.js',
-
-				// You can add README.md file for index page at documentations.
-				'Readme.md' ],
+				src : [ 'lib/**/*.js', 'Readme.md' ],
 				options : {
 					verbose : true,
 					destination : DOC_PATH,
@@ -53,4 +34,5 @@ module.exports = function(grunt) {
 	});
 
 	grunt.registerTask('docs', 'Create documentation for mikronode', [ 'clean:docs', 'jsdoc:docs' ]);
+	grunt.registerTask('default', 'Default', [ 'docs' ]);
 };
