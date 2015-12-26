@@ -1,9 +1,9 @@
 {
   "name": "@f5eng/mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "author": "George Joseph <developers@fairview5.com>",
-  "homepage": "http://f5eng.github.io/mikronode/doc/index.html",
+  "homepage": "http://f5eng.github.io/mikronode",
   "license": "MIT",
   "keywords": [
     "mikrotik",

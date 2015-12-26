@@ -84,7 +84,7 @@ Everything else should work as expected.
   * TLS Support
 
 ## API
-See the [API JSDocs](http://f5eng.github.io/mikronode/doc/index.html) in the doc directory.
+See the [API JSDocs](http://f5eng.github.io/mikronode) in the doc directory.
 	
 ## Notes for Node < 4.0.0
 
