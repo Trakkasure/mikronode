@@ -510,7 +510,7 @@ module.exports = (function() {
 			_(this).currentChannelId = tagChannelId;
 
 			if ((((_(this).currentProgress === '!done' &amp;&amp; (_(this).currentReply === '!re'))) || !more)) {
-				debugSentence('Sentence2: Done channel ' + tagChannelId + '.');
+				debugSentence('Sentence2: Done channel %s  Trapped? %o', tagChannelId, !!_(this).traps[tagChannelId]);
 				_(this).packet = _(this).buffer; // backup up the packet
 				_(this).buffer = [];
 				if (_(this).channel[tagChannelId]) {
@@ -522,7 +522,7 @@ module.exports = (function() {
 					debugSentence('Sentence2: caught second trap');
 					_(this).traps[tagChannelId].addTrapError();
 				}
-				debugSentence('Sentence2: caught a trap');
+				debugSentence('Sentence2: caught a trap for channel %s ', tagChannelId);
 				var trap = new Trap();
 				trap.channelId = tagChannelId;
 				trap.channel = _(this).channel[tagChannelId];
@@ -561,11 +561,11 @@ module.exports = (function() {
 			}
 
 		} else if (data === '!trap') {
-			_(this).currentReply = data;
+			_(this).currentProgress = data;
 			_(this).buffer[_(this).buffer.length] = data;
 
 		} else {
-			if (_(this).currentReply === '!trap') {
+			if (_(this).currentProgress === '!trap') {
 				var m = data.match(/^=(category|message)=(.+)/);
 				if (m) {
 					var ct = _(this).traps[_(this).currentChannelId];
@@ -589,7 +589,7 @@ module.exports = (function() {
 	 * @param {string} data - Sentence
 	 * @this mikronode.Connection
 	 */
-	Connection.prototype.read = function read(data) {
+	Connection.prototype._read = function _read(data) {
 		if (debugSocketData.enabled) {
 			utils.hexDump(data, debugSocketData);
 		}
@@ -606,7 +606,7 @@ module.exports = (function() {
 					_(this).line += data.toString();
 					debugSocketData('read:consume-all: data:' + data);
 					if (_(this).len === 0) {
-						this.emit('sentence', _(this).line, (data.length !== _(this).len));
+						this.sentence(_(this).line, (data.length !== _(this).len));
 						_(this).line = '';
 					}
 					break;
@@ -623,7 +623,7 @@ module.exports = (function() {
 						_(this).len = 0;
 						data = data.slice(1); // get rid of excess buffer
 					}
-					this.emit('sentence', l, data.length);
+					this.sentence(l, data.length);
 				}
 			} else {
 				var y = utils.decodeLength(data);
@@ -662,7 +662,7 @@ module.exports = (function() {
 	};
 
 	/**
-	 * connectCallback
+	 * Called when the connection is established and authenticated
 	 * @callback mikronode.Connection.connectCallback
 	 * @param {mikronode.Connection}
 	 */
@@ -671,6 +671,7 @@ module.exports = (function() {
 	 * Opens the socket and performs authentication
 	 * @param {mikronode.Connection.connectCallback} callback - Called when authentication
 	 *           succeeds and the connection is ready for channel activity
+	 * @returns {mikronode.Connection}
 	 */
 	Connection.prototype.connect = function connect(callBack) {
 		if (_(this).connected) {
@@ -685,7 +686,7 @@ module.exports = (function() {
 		debugSocket('Created socket to %s:%d', this.host, this.port);
 		_(this).connecting = true;
 		_(this).socket.on('data', function(a) {
-			_this.read(a);
+			_this._read(a);
 		});
 		_(this).socket.on('error', function(a) {
 			debugSocket('Connection error: ' + a);
@@ -715,33 +716,31 @@ module.exports = (function() {
 			_(this).socket.setTimeout(this.timeout * 1000);
 		}
 		_(this).socket.setKeepAlive(true);
+
 		login(this);
-		// While logging in, if an error occurs, we should kill the socket.
-		// This will keep node from not terminating due to lingering
-		// sockets.
+
 		return this;
 	};
 
 	function login(conn) {
-		conn.addListener('sentence', conn.sentence);
 		var tempcOD = conn.closeOnDone;
 		conn.closeOnDone = false;
 		_(this).currentReply = 'login';
 
-		_(conn).socket.connect(conn.port, conn.host, function() {
+		_(conn).socket.connect(conn.port, conn.host, function loginStateMachine() {
 			var lc = conn.openChannel('login');
 			lc.closeOnDone = false;
 
-			lc.on('trap', function(data) {
+			lc.on('trap', function loginTrap(data) {
 				lc.close(true);
 				conn.closeOnDone = tempcOD;
 				conn.emit('trap', data);
 			});
 
-			lc.on('done', function(data) {
-				debugLogin('DONE: %o', data);
+			lc.on('done', function loginDone(data) {
 				var parsed = Connection.parseItems(data);
-				debugLogin(parsed);
+				debugLogin('DONE: %o', parsed);
+
 				switch (conn.status) {
 				case 'Sending Login':
 					_(conn).status = 'Sending Credentials';
@@ -757,7 +756,6 @@ module.exports = (function() {
 						_(conn).error = 'Bad connection response: ' + data;
 						debugLogin('Challenge length:' + challenge.length);
 						debugLogin(_(conn).error);
-						conn.removeListener('sentence', conn.loginHandler);
 						conn.close();
 					} else {
 						lc.write('/login', {
@@ -786,7 +784,8 @@ module.exports = (function() {
 	/**
 	 * Opens a new Channel
 	 * @public
-	 * @param {number} [id=next available]
+	 * @param {string} [id=next available] - Automatically assigned ids are numbers but you
+	 *           can specify any string.
 	 * @returns {mikronode.Channel}
 	 */
 	Connection.prototype.openChannel = function openChannel(id) {
@@ -1120,7 +1119,7 @@ module.exports = (function() {
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Dec 25 2015 20:03:32 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sat Dec 26 2015 15:21:01 GMT-0700 (MST)
         </footer>
     </div>
 </div>
