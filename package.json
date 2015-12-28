@@ -22,20 +22,24 @@
     "example": "examples"
   },
   "devDependencies": {
-    "grunt": "*",
-    "grunt-contrib-clean": "*",
-    "grunt-jsdoc": "*",
-    "jsdoc": "*",
-    "jaguarjs-jsdoc": "*",
-    "jsdoc3-plugin-propertyof": "*",
-    "jsdoc-plugin-strip-outer-iife": "*"
+    "gh-pages": "^0.8.0",
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-copy": "^0.8.2",
+    "grunt-gh-pages": "^1.0.0",
+    "grunt-git": "^0.3.7",
+    "grunt-git-archive": "0.0.3",
+    "grunt-jsdoc": "^1.1.0",
+    "grunt-shell": "^1.1.2",
+    "jaguarjs-jsdoc": "0.0.1",
+    "jsdoc": "^3.4.0"
   },
   "dependencies": {
-    "debug": "*",
-    "private-parts": "*"
+    "debug": "^2.2.0",
+    "private-parts": "^0.4.1"
   },
   "optionalDependencies": {
-    "weakmap": "*",
-    "es6-promise": "*"
+    "es6-promise": "^3.0.2",
+    "weakmap": "0.0.6"
   }
 }
