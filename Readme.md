@@ -1,4 +1,4 @@
-# Mikronode
+# MikroNode
       
   Full-Featured asynchronous Mikrotik API interface for [NodeJS](http://nodejs.org).
   
@@ -84,7 +84,7 @@ Everything else should work as expected.
   * TLS Support
 
 ## API
-See the [API JSDocs](http://f5eng.github.io/mikronode) in the doc directory.
+See the [API JSDocs](http://trakkasure.github.io/mikronode) in the doc directory.
 	
 ## Notes for Node < 4.0.0
 
@@ -229,7 +229,8 @@ DON'T RUN THIS IF YOU'RE CONNECTED VIA ether1! :)
 
 (The MIT License)
 
-Copyright (c) 2011 Brandon Myers <trakkasure@gmail.com>
+Copyright (c) 2011-2015 Brandon Myers <trakkasure@gmail.com>
+Copyright (c) 2015 George Joseph <george.joseph@fairview5.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
