@@ -50,7 +50,8 @@
 ## Features
 
   * Channel based communication
-  * Multiple channels can be used at once
+  * Multiple Connections can be used in parallel in the same Node process
+  * Multiple Channels can be used in parallel on the same Connection
   * Synchronous execution of commands issued on the same channel
   * Asynchrounous execution of commands issued on different channels
   * Focus on high performance
@@ -66,30 +67,42 @@ There are 2 changes that will need to be made...
 			var connection = new MikroNode(...)
 	// To
 			var connection = MikroNode.getConnection(...)
+	// or
+			var connection = new MikroNode.Connection(...)
 			
 	// From
 			connection.closeOnDone(true);			
 			channel.closeOnDone(true);
 	// To
 			connection.closeOnDone = true;			
-			channel.closeOnDone - true;
+			channel.closeOnDone = true;
 				
 Everything else should work as expected.
 
 
 ## TODO
-  * Write tests con make sure everything keeps working while making changes.
+  * TLS Support
 
 ## API
-See the [API JSDocs](dist/index.html) in the dist directory.
+See the [API JSDocs](http://f5eng.github.io/mikronode) in the doc directory.
 	
-## Promises
+## Notes for Node < 4.0.0
 
-Promises are now supported for Connection and Channel.  nodejs versions > 4.0 include
-an ES6 Promise implementation.  For earlier versions, installing es6-promise and running
-require('es6-promise').polyfull() before requiring mikronode will set up Promise support.
-You can also globally export Promise from your favorite ES6 compatable Promise library.
+MikroNode requires 2 ES6 features that appeared in Node 4.0.0: Promises and WeakMaps.  If 
+you're running an earlier version of Node and MikroNode can't find those symbols, it will
+attempt to load them from the 'es6-promise' and 'weakmap' packages respectively.  If you wish
+to use other packages to supply those symbols, require them before requiring mikronode and
+set the global symbols.
 
+	global.WeakMap = require('some-weakmap-polyfill').WeakMap;
+	global.Promise = require('some-promise-polyfill').Promise;
+	var MikroNode = require('mikronode');
+
+
+## Tests
+The [test](test/) directory contains a test that exercises all functionality including
+Promises and listens/cancels.
+ 
 ## Examples
 
 [Examples (including Promise examples)](examples/)

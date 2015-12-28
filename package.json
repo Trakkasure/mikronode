@@ -1,0 +1,41 @@
+{
+  "name": "@f5eng/mikronode",
+  "description": "Mikrotik API implemented in Node",
+  "version": "1.0.1",
+  "author": "George Joseph <developers@fairview5.com>",
+  "homepage": "http://f5eng.github.io/mikronode",
+  "license": "MIT",
+  "keywords": [
+    "mikrotik",
+    "socket",
+    "api"
+  ],
+  "repository": "git://github.com/f5eng/mikronode",
+  "bugs": "https://github.com/f5eng/mikronode/issues",
+  "main": "lib/index",
+  "engines": {
+    "node": ">= 0.10.36"
+  },
+  "directories": {
+    "lib": "lib",
+    "doc": "doc",
+    "example": "examples"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-jsdoc": "*",
+    "jsdoc": "*",
+    "jaguarjs-jsdoc": "*",
+    "jsdoc3-plugin-propertyof": "*",
+    "jsdoc-plugin-strip-outer-iife": "*"
+  },
+  "dependencies": {
+    "debug": "*",
+    "private-parts": "*"
+  },
+  "optionalDependencies": {
+    "weakmap": "*",
+    "es6-promise": "*"
+  }
+}
