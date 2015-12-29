@@ -1,48 +1,48 @@
 {
-    "name":"mikronode",
-    "description":"Mikrotik API implemented in Node",
-    "version":"1.0.1",
-    "author":"Brandon Myers <trakkasure@gmail.com>",
-    "contributors":[
-        {
-            "name":"George Joseph",
-            "email":"george.joseph@fairview5.com"
-        }
-    ],
-    "homepage":"http://trakkasure.github.io/mikronode",
-    "license":"MIT",
-    "keywords":[
-        "mikrotik",
-        "socket",
-        "api"
-    ],
-    "repository":"git://github.com/trakkasure/mikronode",
-    "bugs":"https://github.com/trakassure/mikronode/issues",
-    "main":"lib/index",
-    "engines":{
-        "node":">= 0.10.36"
-    },
-    "directories":{
-        "lib":"lib",
-        "doc":"doc",
-        "example":"examples"
-    },
-    "devDependencies":{
-        "grunt":"^0.4.5",
-        "grunt-contrib-clean":"^0.7.0",
-        "grunt-contrib-copy":"^0.8.2",
-        "grunt-git":"^0.3.7",
-        "grunt-jsdoc":"^1.1.0",
-        "grunt-shell":"^1.1.2",
-        "jaguarjs-jsdoc":"0.0.1",
-        "jsdoc":"^3.4.0"
-    },
-    "dependencies":{
-        "debug":"^2.2.0",
-        "private-parts":"^0.4.1"
-    },
-    "optionalDependencies":{
-        "es6-promise":"^3.0.2",
-        "weakmap":"0.0.6"
+  "name": "mikronode",
+  "description": "Mikrotik API implemented in Node",
+  "version": "1.0.2",
+  "author": "Brandon Myers <trakkasure@gmail.com>",
+  "contributors": [
+    {
+      "name": "George Joseph",
+      "email": "george.joseph@fairview5.com"
     }
+  ],
+  "homepage": "http://trakkasure.github.io/mikronode",
+  "license": "MIT",
+  "keywords": [
+    "mikrotik",
+    "socket",
+    "api"
+  ],
+  "repository": "git://github.com/trakkasure/mikronode",
+  "bugs": "https://github.com/trakassure/mikronode/issues",
+  "main": "lib/index",
+  "engines": {
+    "node": ">= 0.10.36"
+  },
+  "directories": {
+    "lib": "lib",
+    "doc": "doc",
+    "example": "examples"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-copy": "^0.8.2",
+    "grunt-git": "^0.3.7",
+    "grunt-jsdoc": "^1.1.0",
+    "grunt-shell": "^1.1.2",
+    "jaguarjs-jsdoc": "0.0.1",
+    "jsdoc": "^3.4.0"
+  },
+  "dependencies": {
+    "debug": "^2.2.0",
+    "private-parts": "^0.4.1"
+  },
+  "optionalDependencies": {
+    "es6-promise": "^3.0.2",
+    "weakmap": "0.0.6"
+  }
 }
