@@ -56,6 +56,7 @@
   * Asynchrounous execution of commands issued on different channels
   * Focus on high performance
   * ES6 Promise support for Connection and Channel
+  * TLS Support
 
 ## Upgrading from versions < 1.0.0
 
@@ -81,7 +82,7 @@ Everything else should work as expected.
 
 
 ## TODO
-  * TLS Support
+  * ???
 
 ## API
 See the [API JSDocs](http://trakkasure.github.io/mikronode) in the doc directory.
