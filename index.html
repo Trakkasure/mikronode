@@ -87,8 +87,6 @@
             
                 <li data-name="mikronode.Channel#closing"><a href="mikronode.Channel.html#closing">closing</a></li>
             
-                <li data-name="mikronode.Channel#connection"><a href="mikronode.Channel.html#connection">connection</a></li>
-            
                 <li data-name="mikronode.Channel#id"><a href="mikronode.Channel.html#id">id</a></li>
             
                 <li data-name="mikronode.Channel#lastCommand"><a href="mikronode.Channel.html#lastCommand">lastCommand</a></li>
@@ -142,6 +140,8 @@
             
             <span class="subtitle">Members</span>
             
+                <li data-name="mikronode.Connection#channels"><a href="mikronode.Connection.html#channels">channels</a></li>
+            
                 <li data-name="mikronode.Connection#closeOnDone"><a href="mikronode.Connection.html#closeOnDone">closeOnDone</a></li>
             
                 <li data-name="mikronode.Connection#host"><a href="mikronode.Connection.html#host">host</a></li>
@@ -153,6 +153,8 @@
                 <li data-name="mikronode.Connection#status"><a href="mikronode.Connection.html#status">status</a></li>
             
                 <li data-name="mikronode.Connection#timeout"><a href="mikronode.Connection.html#timeout">timeout</a></li>
+            
+                <li data-name="mikronode.Connection#tls"><a href="mikronode.Connection.html#tls">tls</a></li>
             
                 <li data-name="mikronode.Connection#user"><a href="mikronode.Connection.html#user">user</a></li>
             
@@ -324,6 +326,7 @@ connection.getConnectPromise().then(function(conn) {
 <li>Asynchrounous execution of commands issued on different channels</li>
 <li>Focus on high performance</li>
 <li>ES6 Promise support for Connection and Channel</li>
+<li>TLS Support</li>
 </ul>
 <h2>Upgrading from versions &lt; 1.0.0</h2><p>There are 2 changes that will need to be made...</p>
 <pre class="prettyprint source"><code>var MikroNode = require('mikronode');            
@@ -342,7 +345,7 @@ connection.getConnectPromise().then(function(conn) {
         connection.closeOnDone = true;            
         channel.closeOnDone = true;</code></pre><p>Everything else should work as expected.</p>
 <h2>TODO</h2><ul>
-<li>TLS Support</li>
+<li>???</li>
 </ul>
 <h2>API</h2><p>See the <a href="http://trakkasure.github.io/mikronode">API JSDocs</a> in the doc directory.</p>
 <h2>Notes for Node &lt; 4.0.0</h2><p>MikroNode requires 2 ES6 features that appeared in Node 4.0.0: Promises and WeakMaps.  If<br>you're running an earlier version of Node and MikroNode can't find those symbols, it will<br>attempt to load them from the 'es6-promise' and 'weakmap' packages respectively.  If you wish<br>to use other packages to supply those symbols, require them before requiring mikronode and<br>set the global symbols.</p>
@@ -450,7 +453,7 @@ connection.getConnectPromise().then(function(conn) {
     });
 });</code></pre><p>  The methods <em>decodeLength</em> and <em>encodeString</em> were written based on code <a href="http://wiki.mikrotik.com/wiki/API_PHP_class#Class">here on the Mikrotik Wiki</a>.</p>
 <h2>License</h2><p>(The MIT License)</p>
-<p>Copyright (c) 2011-2015 Brandon Myers <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#111;&#58;&#116;&#114;&#x61;&#107;&#107;&#x61;&#115;&#x75;&#x72;&#101;&#x40;&#x67;&#109;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#109;">&#116;&#114;&#x61;&#107;&#107;&#x61;&#115;&#x75;&#x72;&#101;&#x40;&#x67;&#109;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#109;</a><br>Copyright (c) 2015 George Joseph <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x67;&#101;&#x6f;&#x72;&#x67;&#101;&#x2e;&#106;&#x6f;&#115;&#x65;&#x70;&#x68;&#x40;&#x66;&#x61;&#105;&#x72;&#x76;&#x69;&#x65;&#x77;&#x35;&#x2e;&#99;&#x6f;&#109;">&#x67;&#101;&#x6f;&#x72;&#x67;&#101;&#x2e;&#106;&#x6f;&#115;&#x65;&#x70;&#x68;&#x40;&#x66;&#x61;&#105;&#x72;&#x76;&#x69;&#x65;&#x77;&#x35;&#x2e;&#99;&#x6f;&#109;</a></p>
+<p>Copyright (c) 2011-2015 Brandon Myers <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#111;&#58;&#116;&#114;&#97;&#107;&#107;&#x61;&#115;&#117;&#114;&#101;&#64;&#x67;&#x6d;&#97;&#x69;&#x6c;&#46;&#x63;&#x6f;&#109;">&#116;&#114;&#97;&#107;&#107;&#x61;&#115;&#117;&#114;&#101;&#64;&#x67;&#x6d;&#97;&#x69;&#x6c;&#46;&#x63;&#x6f;&#109;</a><br>Copyright (c) 2015 George Joseph <a href="&#109;&#x61;&#105;&#108;&#x74;&#111;&#58;&#x67;&#101;&#111;&#114;&#x67;&#101;&#x2e;&#x6a;&#x6f;&#x73;&#101;&#112;&#104;&#64;&#102;&#x61;&#x69;&#114;&#118;&#x69;&#101;&#119;&#x35;&#x2e;&#x63;&#111;&#x6d;">&#x67;&#101;&#111;&#114;&#x67;&#101;&#x2e;&#x6a;&#x6f;&#x73;&#101;&#112;&#104;&#64;&#102;&#x61;&#x69;&#114;&#118;&#x69;&#101;&#119;&#x35;&#x2e;&#x63;&#111;&#x6d;</a></p>
 <p>Permission is hereby granted, free of charge, to any person obtaining<br>a copy of this software and associated documentation files (the<br>'Software'), to deal in the Software without restriction, including<br>without limitation the rights to use, copy, modify, merge, publish,<br>distribute, sublicense, and/or sell copies of the Software, and to<br>permit persons to whom the Software is furnished to do so, subject to<br>the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be<br>included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,<br>EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF<br>MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.<br>IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY<br>CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,<br>TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE<br>SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></article>
@@ -464,7 +467,7 @@ connection.getConnectPromise().then(function(conn) {
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Dec 28 2015 15:53:40 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jan 01 2016 19:11:45 GMT-0700 (MST)
         </footer>
     </div>
 </div>
