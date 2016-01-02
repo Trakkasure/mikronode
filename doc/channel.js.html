@@ -87,8 +87,6 @@
             
                 <li data-name="mikronode.Channel#closing"><a href="mikronode.Channel.html#closing">closing</a></li>
             
-                <li data-name="mikronode.Channel#connection"><a href="mikronode.Channel.html#connection">connection</a></li>
-            
                 <li data-name="mikronode.Channel#id"><a href="mikronode.Channel.html#id">id</a></li>
             
                 <li data-name="mikronode.Channel#lastCommand"><a href="mikronode.Channel.html#lastCommand">lastCommand</a></li>
@@ -142,6 +140,8 @@
             
             <span class="subtitle">Members</span>
             
+                <li data-name="mikronode.Connection#channels"><a href="mikronode.Connection.html#channels">channels</a></li>
+            
                 <li data-name="mikronode.Connection#closeOnDone"><a href="mikronode.Connection.html#closeOnDone">closeOnDone</a></li>
             
                 <li data-name="mikronode.Connection#host"><a href="mikronode.Connection.html#host">host</a></li>
@@ -177,8 +177,6 @@
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
             
                 <li data-name="mikronode.Connection#getChannel"><a href="mikronode.Connection.html#getChannel">getChannel</a></li>
-            
-                <li data-name="mikronode.Connection#getChannels"><a href="mikronode.Connection.html#getChannels">getChannels</a></li>
             
                 <li data-name="mikronode.Connection#getCommandPromise"><a href="mikronode.Connection.html#getCommandPromise">getCommandPromise</a></li>
             
@@ -340,16 +338,18 @@ module.exports = (function() {
 		 * @member {number} id
 		 * @memberof mikronode.Channel
 		 */
-		utils.createProperty(this, 'id', id);
+		utils.createProperty(this, 'id', id, false, _);
+
 		/**
 		 * Connection
-		 * @public
+		 * @private
 		 * @readonly
 		 * @instance
 		 * @member {mikronode.Connection} connection
 		 * @memberof mikronode.Channel
 		 */
-		utils.createProperty(this, 'connection', conn);
+		_(this).connection = conn;
+
 		/**
 		 * @public
 		 * @readonly
@@ -382,7 +382,7 @@ module.exports = (function() {
 		 * @member {boolean} clearEvents
 		 * @memberof mikronode.Channel
 		 */
-		this.clearEvents = false;
+		utils.createProperty(this, 'clearEvents', false, true, _);
 
 		/**
 		 * Save each line received in a buffer and pass the entire buffer to the done event.
@@ -394,7 +394,7 @@ module.exports = (function() {
 		 * @member {boolean} saveBuffer
 		 * @memberof mikronode.Channel
 		 */
-		this.saveBuffer = true;
+		utils.createProperty(this, 'saveBuffer', true, true, _);
 
 		/**
 		 * Close channel on done
@@ -403,7 +403,7 @@ module.exports = (function() {
 		 * @member {boolean} closeOnDone
 		 * @memberof mikronode.Channel
 		 */
-		this.closeOnDone = false;
+		utils.createProperty(this, 'closeOnDone', false, true, _);
 
 		/**
 		 * @public
@@ -412,7 +412,7 @@ module.exports = (function() {
 		 * @member {string[]} lastCommand
 		 * @memberof mikronode.Channel
 		 */
-		this.lastCommand = [];
+		utils.createProperty(this, 'lastCommand', [], false, _, true);
 
 		/**
 		 * @private
@@ -451,25 +451,27 @@ module.exports = (function() {
 		/* A 'error' event is thrown by Socket
 		 * and are non-recoverable so we force close the channel. 
 		 */
-		conn.once('error', utils.makeListener(this.errorListener, this));
+		_(this).errorListener = utils.makeListener(this.errorListener, this);
+		conn.once('error', _(this).errorListener);
 
 		/* A 'timeout' event is thrown by Socket
 		 * but they are recoverable. If Connection has closed
 		 * the Socket, we'll close the channel.  Otherwise, just
 		 * notify receivers and let them decide what to do.
 		 */
-		conn.on('timeout', utils.makeListener(this.timeoutListener, this));
+		_(this).timeoutListener = utils.makeListener(this.timeoutListener, this);
+		conn.on('timeout', _(this).timeoutListener);
 	}
 	util.inherits(Channel, events.EventEmitter);
 
 	Channel.prototype.errorListener = function errorListener(err) {
-		debugChannel('Channel %s caught Connection Error: %o', this.id, this.connection);
+		debugChannel('Channel %s caught Connection Error: %o', _(this).id, _(this).connection);
 		this.emit('error', err, this);
 		this.close(true);
 	};
 
 	Channel.prototype.timeoutListener = function timeoutListener(message, socketStillOpen) {
-		debugChannel('Channel %s caught Timeout', this.id);
+		debugChannel('Channel %s caught Timeout', _(this).id);
 		this.emit('timeout', message, socketStillOpen, this);
 		if (!socketStillOpen) {
 			this.close(true);
@@ -525,34 +527,34 @@ module.exports = (function() {
 				return;
 			}
 		} else {
-			debugChannel('Channel %s write: empty arg.', this.id);
+			debugChannel('Channel %s write: empty arg.', _(this).id);
 		}
 
 		if (_(this).running) {
-			this.lastCommand = _(this).buffer;
+			_(this).lastCommand = _(this).buffer;
 			if (debugChannelData.enabled) {
-				debugChannelData('Channel %s running: pushing command %o', this.id, this.lastCommand);
+				debugChannelData('Channel %s running: pushing command %o', _(this).id, _(this).lastCommand);
 			} else {
-				debugChannel('Channel %s running: pushing command', this.id);
+				debugChannel('Channel %s running: pushing command', _(this).id);
 			}
 			_(this).commands.push([ _(this).buffer, writeCallback ]);
 			_(this).buffer = [];
 		} else {
-			this.lastCommand = _(this).buffer;
+			_(this).lastCommand = _(this).buffer;
 			var b = _(this).buffer;
 			_(this).running = true;
-			this.saveBuffer = true;
+			_(this).saveBuffer = true;
 			_(this).buffer = [];
-			b.push('.tag=' + this.id);
+			b.push('.tag=' + _(this).id);
 			if (writeCallback) {
 				writeCallback(this);
 			}
 			if (debugChannelData.enabled) {
-				debugChannelData('Channel %s idle: writing %o', this.id, this.lastCommand);
+				debugChannelData('Channel %s idle: writing %o', _(this).id, _(this).lastCommand);
 			} else {
-				debugChannel('Channel %s idle: writing', this.id);
+				debugChannel('Channel %s idle: writing', _(this).id);
 			}
-			this.connection._write(b); // Send command.
+			_(this).connection._write(b); // Send command.
 		}
 	};
 
@@ -563,7 +565,7 @@ module.exports = (function() {
 	 */
 	Channel.prototype._done = function _done(data, trap) {
 		if (trap) {
-			debugChannel('Channel %s trap: %o', this.id, trap);
+			debugChannel('Channel %s trap: %o', _(this).id, trap);
 			this.emit('trap', trap, this);
 		} else {
 			var p = _(this).packet;
@@ -575,15 +577,15 @@ module.exports = (function() {
 			}
 
 			if (debugChannelData.enabled) {
-				debugChannelData('Channel %s done: %o', this.id, p);
+				debugChannelData('Channel %s done: %o', _(this).id, p);
 			} else {
-				debugChannel('Channel %s done', this.id);
+				debugChannel('Channel %s done', _(this).id);
 			}
 
 			this.emit('done', p, this);
 		}
 
-		if (this.clearEvents) {
+		if (_(this).clearEvents) {
 			this.removeAllListeners('done');
 			this.removeAllListeners('data');
 			this.removeAllListeners('read');
@@ -593,10 +595,10 @@ module.exports = (function() {
 			var c = _(this).commands.shift();
 			var cl = _(this).closing;
 			_(this).closing = false;
-			debugChannel('Channel %s more commands', this.id);
+			debugChannel('Channel %s more commands', _(this).id);
 			this.write(c[0], {}, c[1]);
 			_(this).closing = cl;
-		} else if (_(this).closing || this.closeOnDone) {
+		} else if (_(this).closing || _(this).closeOnDone) {
 			this.close();
 		}
 	};
@@ -608,12 +610,12 @@ module.exports = (function() {
 	 */
 	Channel.prototype._data = function _data(data) {
 		if (debugChannelData.enabled) {
-			debugChannelData('Channel %s data: %o', this.id, data);
+			debugChannelData('Channel %s data: %o', _(this).id, data);
 		} else {
-			debugChannel('Channel %s data', this.id);
+			debugChannel('Channel %s data', _(this).id);
 		}
 
-		if (this.saveBuffer) {
+		if (_(this).saveBuffer) {
 			_(this).packet.push(data);
 		}
 		this.emit('data', [ data ], this);
@@ -632,22 +634,23 @@ module.exports = (function() {
 	Channel.prototype.close = function close(force) { // Close _(this) channel.
 		_(this).closing = true;
 		if (_(this).closed || (!force &amp;&amp; (_(this).commands.length || _(this).running))) {
-			debugChannel('Channel %s closing deferred', this.id);
+			debugChannel('Channel %s closing deferred', _(this).id);
 			return;
 		}
-		debugChannel('Channel %s closing.  Forced: %s', this.id, force ? 'true' : 'false');
+		debugChannel('Channel %s closing.  Forced: %s', _(this).id, force ? 'true' : 'false');
 		if (_(this).running) {
 			try {
-				debugChannel('Channel %s sending cancel', this.id);
-				this.connection._write([ '/cancel', '=tag=' + this.id ]);
+				debugChannel('Channel %s sending cancel', _(this).id);
+				_(this).connection._write([ '/cancel', '=tag=' + _(this).id ]);
 			} catch (err) {
 				debugChannel('Error sending /cancel', err.stack);
 			}
 		}
 
-		this.connection.removeListener('error', this.errorListener).removeListener('timeout', this.timeoutListener);
+		_(this).connection.removeListener('error', _(this).errorListener);
+		_(this).connection.removeListener('timeout', _(this).timeoutListener);
 
-		debugChannel('Channel %s closed', this.id);
+		debugChannel('Channel %s closed', _(this).id);
 		_(this).closed = true;
 		this.emit('close', this);
 		this.removeAllListeners();
@@ -658,7 +661,7 @@ module.exports = (function() {
 	 * @public
 	 */
 	Channel.prototype.finalize = function finalize() {
-		debugChannel('Channel %s finalize', this.id);
+		debugChannel('Channel %s finalize', _(this).id);
 		if (!_(this).closing) {
 			this.close();
 		}
@@ -678,7 +681,7 @@ module.exports = (function() {
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Dec 31 2015 17:09:38 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jan 01 2016 19:11:45 GMT-0700 (MST)
         </footer>
     </div>
 </div>
