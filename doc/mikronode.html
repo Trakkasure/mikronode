@@ -87,8 +87,6 @@
             
                 <li data-name="mikronode.Channel#closing"><a href="mikronode.Channel.html#closing">closing</a></li>
             
-                <li data-name="mikronode.Channel#connection"><a href="mikronode.Channel.html#connection">connection</a></li>
-            
                 <li data-name="mikronode.Channel#id"><a href="mikronode.Channel.html#id">id</a></li>
             
                 <li data-name="mikronode.Channel#lastCommand"><a href="mikronode.Channel.html#lastCommand">lastCommand</a></li>
@@ -142,6 +140,8 @@
             
             <span class="subtitle">Members</span>
             
+                <li data-name="mikronode.Connection#channels"><a href="mikronode.Connection.html#channels">channels</a></li>
+            
                 <li data-name="mikronode.Connection#closeOnDone"><a href="mikronode.Connection.html#closeOnDone">closeOnDone</a></li>
             
                 <li data-name="mikronode.Connection#host"><a href="mikronode.Connection.html#host">host</a></li>
@@ -177,8 +177,6 @@
                 <li data-name="mikronode.Connection#connect"><a href="mikronode.Connection.html#connect">connect</a></li>
             
                 <li data-name="mikronode.Connection#getChannel"><a href="mikronode.Connection.html#getChannel">getChannel</a></li>
-            
-                <li data-name="mikronode.Connection#getChannels"><a href="mikronode.Connection.html#getChannels">getChannels</a></li>
             
                 <li data-name="mikronode.Connection#getCommandPromise"><a href="mikronode.Connection.html#getCommandPromise">getCommandPromise</a></li>
             
@@ -347,12 +345,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".getConnection">
             
-            <span class="type-signature static">static</span>mikronode.getConnection<span class="signature">(host, user, password, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="mikronode.Connection.html">mikronode.Connection</a>}</span>
+            <span class="type-signature static">static</span>mikronode.getConnection<span class="signature">(host, user, password, <span class="optional">options</span>)</span>
         </h4>
     
         
         <div class="tag-source">
-            <a href="index.js.html">index.js</a>, <a href="index.js.html#line53">line 53</a>
+            <a href="index.js.html">index.js</a>, <a href="index.js.html#line72">line 72</a>
         </div>
         
     </div>
@@ -555,7 +553,7 @@
                         
                     
                 
-                <p>Sets the port if not the standard 8728.</p></td>
+                <p>Sets the port if not the standard 8728 (8729 for<br>          TLS).</p></td>
         </tr>
 	
 	
@@ -667,6 +665,43 @@
         </tr>
 	
 	
+	
+        <tr>
+            
+                <td class="name"><code>tls</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Set to true to use TLS for this connection.<br>          Set to an object to use TLS and pass the object to tls.connect as the tls<br>          options. If your device uses self-signed certificates, you'll either have to<br>          set 'rejectUnauthorized : false' or supply the proper CA certificate. See the<br>          options for<br>          <a href="https://nodejs.org/api/tls.html#tls_tls_connect_port_host_options_callback">tls.connect()</a><br>          for more info.</p></td>
+        </tr>
+	
+	
 	</tbody>
 </table>
             </td>
@@ -704,18 +739,36 @@
 
     
     
-
+    <h5>Fires:</h5>
+    <ul>
+        <li><a href="mikronode.Connection.html#event:event:trap">mikronode.Connection#event:trap</a></li>
+    
+        <li><a href="mikronode.Connection.html#event:event:error">mikronode.Connection#event:error</a></li>
+    
+        <li><a href="mikronode.Connection.html#event:event:timeout">mikronode.Connection#event:timeout</a></li>
+    
+        <li><a href="mikronode.Connection.html#event:event:close">mikronode.Connection#event:close</a></li>
+    </ul>
     
 
     
+
     
     
     
+    <h5>Throws:</h5>
     
+            
+
+    <div class="param-desc">
     
+        <p><strong>WARNING: If you do not listen for 'error' or 'timeout' events and one<br>           occurrs during the initial connection (host unreachable, connection refused,<br>           etc.), an &quot;Unhandled 'error' event&quot; exception will be thrown.</strong></p>
     
+    </div>
 
 
+        
+    
     
     
     
@@ -731,6 +784,11 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
     closeOnDone : true,
     closeOnTimeout : true,
 });
+
+connection.on('error', function(err) {
+    console.error('Error: ', err);
+});
+
 </pre>
     
 
@@ -748,7 +806,7 @@ var connection = MikroNode.getConnection('192.168.88.1', 'admin', 'mypassword', 
     
         
         <div class="tag-source">
-            <a href="index.js.html">index.js</a>, <a href="index.js.html#line65">line 65</a>
+            <a href="index.js.html">index.js</a>, <a href="index.js.html#line84">line 84</a>
         </div>
         
     </div>
@@ -880,7 +938,7 @@ Array of objects</li>
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Dec 31 2015 17:09:38 GMT-0700 (MST)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jan 01 2016 19:11:45 GMT-0700 (MST)
         </footer>
     </div>
 </div>
