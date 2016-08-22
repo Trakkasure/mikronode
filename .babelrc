@@ -6,5 +6,6 @@
           , "transform-dev-warning"
           , "add-module-exports"
           , "transform-decorators-legacy"
+          , "transform-private-properties"
         ]
 }
