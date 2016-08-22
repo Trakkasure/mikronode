@@ -1,23 +1,30 @@
-api=require('../lib/index.js');
+var api=require('..');
 
-c1=new api('192.168.0.1','admin','');
-c1.closeOnDone(true);
-c1.connect(function(c) {
-    var o=this.openChannel();
-    o.closeOnDone(true);
-    o.write(['/interface/print'],function(channel){
-        console.log('Getting Interfaces');
-        channel.once('done',function(p,chan) {
-            p=api.parseItems(p);
-            p.forEach(function(i){console.log(JSON.stringify(i))});
-        });
+var device=new api(/* Host */'10.10.10.1' /*, Port */ /*, Timeout */);
+
+
+// connect: user, password.
+device.connect('username','password').then(function(conn) {
+    conn.closeOnDone(true);
+    var c1=conn.openChannel();
+    var c2=conn.openChannel();
+    c1.closeOnDone(true);
+    c2.closeOnDone(true);
+    console.log('Getting Interfaces');
+    c1.write('/interface/print');
+    console.log('Getting routes');
+    c2.write('/ip/route/print');
+
+    c1.data // filter is pointless since data is only data.filter(function(d) {return d.type=='data'})
+      .subscribe(function(data) { // feeds in one result line at a time.
+          console.log(JSON.stringify(data));
+       })
     });
-    o.write('/ip/route/print',function(channel){
-        console.log('Getting routes');
-        channel.on('done',function(p,chan) {
-            console.log('Routes:');
-            p=api.parseItems(p);
-            p.forEach(function(i){console.log(JSON.stringify(i))});
-        });
-    });
-});
+
+    // In this one, we wait for the data to be done before running handler.
+    c2.bufferedStream
+      .subscribe(function(data){ // feeds in all results at once.
+        console.log('Routes:');
+        data.forEach(function(i){console.log(JSON.stringify(i))});
+      });
+};
