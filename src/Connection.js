@@ -2,7 +2,7 @@ import util from 'util';
 import events from 'events';
 import {Subject, Observable} from 'rxjs';
 import {autobind} from 'core-decorators';
-import {STRING_TYPE, DEBUG, CONNECTION, CHANNEL, EVENTS} from './constants.js';
+import {STRING_TYPE, DEBUG, CONNECTION, CHANNEL, EVENT} from './constants.js';
 import Channel from './Channel';
 
 export default class Connection extends events.EventEmitter {
@@ -27,13 +27,13 @@ export default class Connection extends events.EventEmitter {
 
         this.stream=stream;
 
-        login.filter(d=>d.type===EVENTS.TRAP)
+        login.filter(d=>d.type===EVENT.TRAP)
              .subscribe(trap=>{
                 this.emit('trap',trap.data)
                 this.close();
              });
 
-        login.filter(d=>d.type===EVENTS.DONE_RET)
+        login.filter(d=>d.type===EVENT.DONE_RET)
              .subscribe(data=>{
                 this.status=CONNECTION.CONNECTING;
                 this.debug>=DEBUG.DEBUG&&console.log("Got done_ret, building response to ",data);
@@ -50,7 +50,7 @@ export default class Connection extends events.EventEmitter {
                 }
              });
 
-        login.filter(d=>d.type===EVENTS.DONE)
+        login.filter(d=>d.type===EVENT.DONE)
              .subscribe(d=>{
                 this.status=CONNECTION.CONNECTED;
                 this.debug>=DEBUG.INFO&&console.log('Connected');

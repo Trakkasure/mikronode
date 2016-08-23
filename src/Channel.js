@@ -1,7 +1,7 @@
 import util from 'util';
 import events from 'events';
 import {Observable, Subject, Scheduler} from 'rxjs';
-import {DEBUG, CONNECTION, CHANNEL} from './constants.js';
+import {DEBUG, CONNECTION, CHANNEL, EVENT} from './constants.js';
 
 export default class Channel extends events.EventEmitter {
 
@@ -47,7 +47,7 @@ export default class Channel extends events.EventEmitter {
         this.id=id;
         this.read=stream.read.takeWhile(()=>!(this.status&(CHANNEL.CLOSING|CHANNEL.CLOSED)))
             .do(e=>{
-                if (e.type=='done_tag'||e.type=='done'||e.type=='done_ret') {
+                if (e.type==EVENT.DONE_TAG||e.type==EVENT.DONE||e.type==EVENT.DONE_RET) {
                     this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::Triggering Done',id);
                     this.status=CHANNEL.DONE;
                     if (this.closeOnDone) {
@@ -56,7 +56,7 @@ export default class Channel extends events.EventEmitter {
                     }
                     done.next("go");
                 } else
-                if (e.type=='fatal') {
+                if (e.type==EVENT.FATAL) {
                     this.status=CHANNEL.CLOSED;
                     this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSING',id);
                     this.close();
@@ -65,9 +65,9 @@ export default class Channel extends events.EventEmitter {
 
         this.data=this.read
             .do(e=>this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::DATA ',id,e))
-            .filter(e=>e.type==='data'||e.type==='done_ret')
+            .filter(e=>e.type===EVENT.DATA||e.type===EVENT.DONE_RET)
             .map(e=>e.data)
-            .do(data=>this.emit('data',data));
+            .do(data=>this.emit(EVENT.DATA,data));
 
         this.bufferedStream=this.data
             .buffer(index)
@@ -76,7 +76,7 @@ export default class Channel extends events.EventEmitter {
         this.bufferedStream
             .subscribe(([buffer,index])=>{
                 this.debug>=DEBUG.INFO&&console.log('Channel(%s)::DONE (%s)',id,index);
-                this.emit('done',buffer,index);
+                this.emit(EVENT.DONE,buffer,index);
                 if (this.status&CHANNEL.CLOSING||this.stream.done()) {
                     this.debug>=DEBUG.SILLY&&console.log("Channel (%s) closing",id);
                     this.close();
@@ -90,9 +90,9 @@ export default class Channel extends events.EventEmitter {
         this.status=CHANNEL.CLOSED;
         this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSED',this.id);
         this.stream.close();
-        this.removeAllListeners('done');
-        this.removeAllListeners('data');
-        this.removeAllListeners('read');
+        this.removeAllListeners(EVENT.DONE);
+        this.removeAllListeners(EVENT.DATA);
+        this.removeAllListeners(EVENT.TRAP);
     }
     // Enfore read-only
     get data() {
@@ -101,6 +101,10 @@ export default class Channel extends events.EventEmitter {
 
     get bufferedStream() {
         return this.bufferedStream;
+    }
+
+    get trap() {
+        return this.read.filter(e=>e.type===EVENT.TRAP||e.type===);
     }
 
     /** Return the incoming read stream */

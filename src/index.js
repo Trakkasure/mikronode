@@ -6,7 +6,7 @@ import {autobind} from 'core-decorators';
 import crypto from 'crypto';
 
 import {hexDump, decodeLength, encodeString} from './Util.js';
-import {STRING_TYPE, DEBUG, CONNECTION, EVENTS} from './constants.js';
+import {STRING_TYPE, DEBUG, CONNECTION} from './constants.js';
 import parser from './parser.js';
 
 import Connection from './Connection';

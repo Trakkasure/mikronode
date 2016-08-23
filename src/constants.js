@@ -39,7 +39,7 @@ const CHANNEL = {
   , RUNNING : 8
   , DONE:16
 };
-const EVENTS = {
+const EVENT = {
     TRAP: 'trap'
   , TRAP_TAG: 'trap_tag'
   , DONE: 'done'
