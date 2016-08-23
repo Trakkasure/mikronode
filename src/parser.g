@@ -29,7 +29,7 @@ end
   / f:fatal                                   {return {type: "fatal", data:f } }
 
 tag 
-  = ".tag=" id:[0-9]+ {return id.join('')}
+  = ".tag=" id:[a-zA-Z_\-0-9]+ {return id.join('')}
 
 trap
   = "!trap" s d:data+ { return {type:"trap", data:d} }
