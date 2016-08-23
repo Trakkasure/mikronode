@@ -6,36 +6,16 @@ import {autobind} from 'core-decorators';
 import crypto from 'crypto';
 
 import {hexDump, decodeLength, encodeString} from './Util.js';
+import {STRING_TYPE, DEBUG, CONNECTION, EVENTS} from './constants.js';
 import parser from './parser.js';
-
 
 import Connection from './Connection';
 
+const Socket=net.Socket;
 const nullString=String.fromCharCode(0);
 const emptyFunction=()=>{};
-const STRING_TYPE=typeof "";
-const NONE=0;
-const ERROR=1;
-const WARN=2;
-const INFO=4;
-const DEBUG=8;
-const SILLY=16;
 
-const DISCONNECTED=0;// Disconnected from device
-                     // ERROR defined above means a connect or transport error.
-const CONNECTING=2;  // Connecting to device
-const CONNECTED=4;   // Connected and idle
-const WAITING=8;     // Waiting for response(s)
-const Socket=net.Socket;
-
-export default class MikroNode extends util.EventEmitter {
-
-    static NONE=0;
-    static ERROR=1;
-    static WARN=2;
-    static INFO=4;
-    static DEBUG=8;
-    static SILLY=16;
+class MikroNode {
 
     /** Host to connect */
     @Private
@@ -47,7 +27,7 @@ export default class MikroNode extends util.EventEmitter {
 
     /** Debug Level */
     @Private
-    debug=NONE;
+    debug=DEBUG.NONE;
 
     /** Timeout for connecting. */
     @Private
@@ -58,7 +38,7 @@ export default class MikroNode extends util.EventEmitter {
     sock;
 
     @Private
-    status=DISCONNECTED;
+    status=CONNECTION.DISCONNECTED;
 /**
  * Creates a MikroNode API object.
  * @exports mikronode
@@ -111,7 +91,6 @@ export default class MikroNode extends util.EventEmitter {
  */
     constructor(host,port=8728,timeout=5) {
         // const {debug,port,timeout}=opts;
-        super();
         this.host=host;
         this.port=port;
         this.timeout=timeout;
@@ -137,9 +116,9 @@ export default class MikroNode extends util.EventEmitter {
 
     /** Connect to remote server using ID and password */
     connect(user,password) {
-        this.debug>=MikroNode.INFO&&console.log('Connecting to '+this.host);
+        this.debug>=DEBUG.INFO&&console.log('Connecting to '+this.host);
 
-        this.debug>=MikroNode.SILLY&&console.log('Creating socket');
+        this.debug>=DEBUG.SILLY&&console.log('Creating socket');
         this.sock = new SocketStream(this.timeout,this.debug);
         const stream=this.sock.getStream();
 
@@ -153,26 +132,29 @@ export default class MikroNode extends util.EventEmitter {
             ]);
         };
 
-        const close=()=>this.sentence$.complete();
-        this.debug>=MikroNode.SILLY&&console.log('Creating promise for socket connect');
+        const close=()=>this.sock.getStream().sentence.complete();
+        this.debug>=DEBUG.SILLY&&console.log('Creating promise for socket connect');
         const promise = new Promise((resolve,reject) => {
             const connected = () => {
                 // Create a connection handler
-                this.debug>=MikroNode.DEBUG&&console.log('Logging in');
+                this.debug>=DEBUG.DEBUG&&console.log('Logging in');
                 stream.write('/login');
                 this.connection=new Connection({...stream,close},login,{resolve,reject});
                 this.connection.setDebug(this.debug);
                 /* Initiate Login */
             };
-            this.debug>=MikroNode.SILLY&&console.log('Connecting to remote host');
+            this.debug>=DEBUG.SILLY&&console.log('Connecting to remote host');
             this.sock.connect(this.host,this.port,connected);
-            this.stream.sentence.subscribe(null,null,reject); // reject promise on error.
+            this.sock.getStream().sentence.subscribe(null,null,reject); // reject promise on error.
         });
-        promise.then(null,(e)=>this.sentence$.error(e));
         // Connect to the server.
         return promise;
     }
 }
+
+// Object.keys(DEBUG).forEach(k=>MikroNode[k]=DEBUG[k]);
+export default Object.assign(MikroNode,DEBUG);
+
 
 /** Handles the socket connection and parsing of infcoming data. */
 /* This entire class is private (not exported) */
@@ -182,10 +164,10 @@ class SocketStream {
     socket;
 
     @Private
-    status=NONE;
+    status=CONNECTION.NONE;
 
     @Private
-    debug=NONE;
+    debug=DEBUG.NONE;
 
     @Private
     sentence$
@@ -197,16 +179,19 @@ class SocketStream {
     data$;
 
     constructor(timeout,debug) {
-        debug>=DEBUG&&console.log('SocketStream::new',[timeout,debug]);
+        debug>=DEBUG.DEBUG&&console.log('SocketStream::new',[timeout,debug]);
 
         this.debug=debug;
         this.socket = new Socket({type:'tcp4'});
 
         this.sentence$=new Subject();
+        // Each raw sentence from the stream passes through this parser.
         this.parsed$=this.sentence$
             .map(o=>o.join('\n')) // Make array string.
-            .do(d=>this.debug>=SILLY&&console.log("Data to parse:",d))
-            .map(d=>parser.parse(d)).flatMap(d=>Observable.from(d)).share(); // parse the string.
+            .do(d=>this.debug>=DEBUG.SILLY&&console.log("Data to parse:",d))
+            .map(d=>{var s=parser.parse(d);s.host=this.host;return s;})
+            .flatMap(d=>Observable.from(d)) // break off observable from parse stream.
+            .share(); // parse the string.
 
         // When we receive data, it is pushed into the stream defined below.
         this.data$=Observable.fromEvent(this.socket,'data');
@@ -217,62 +202,62 @@ class SocketStream {
                 o=last.o,
                 c,go;
 
-            this.debug>=DEBUG&&console.log("Packet received: ",last,stream);
+            this.debug>=DEBUG.DEBUG&&console.log("Packet received: ",last,stream);
             // If the xpected length of lst process is zero, we expect to be told next buffer length.
             if(!last.len) {
                 // Getting length;
-                this.debug>=SILLY&&console.log("Getting length");
+                this.debug>=DEBUG.SILLY&&console.log("Getting length");
                 [buff,l] = decodeLength(buff);
-                this.debug>=SILLY&&console.log("Length: ",l);
+                this.debug>=DEBUG.SILLY&&console.log("Length: ",l);
                 // We didn't get all of the data from this buffer. Wait for next packet.
                 if (buff.length<l) {
-                    this.debug=>DEBUG&&console.log("Buffer shorter than expected data, waiting for next packet.",{b:buff,len:l,o:o});
+                    this.debug>=DEBUG.DEBUG&&console.log("Buffer shorter than expected data, waiting for next packet.",{b:buff,len:l,o:o});
                     return {b:buff,len:l,o:o};
                 }
             }
             go=buff.length>0;
-            this.debug>=SILLY&&console.log("Starting parse loop w/existing length ",l);
+            this.debug>=DEBUG.SILLY&&console.log("Starting parse loop w/existing length ",l);
             while(go) {
                 c = buff.slice(0,l).toString('utf8');
-                this.debug>=SILLY&&console.log("Extracted data: ",c);
+                this.debug>=DEBUG.SILLY&&console.log("Extracted data: ",c);
                 // Push content as sentence piece.
                 o.push(c);
                 // If we detected end of sentence
                 if (buff[l]===0) {
                     // then post new sentence.
-                    this.debug>=DEBUG&&console.log('Detected end of sentence, posting existing sentence',o);
+                    this.debug>=DEBUG.DEBUG&&console.log('Detected end of sentence, posting existing sentence',o);
                     this.sentence$.next(o);
                     // Reset sentence buffer.
                     l++;
                     o=[];
                 }
-                this.debug>=SILLY&&console.log("Getting length",buff.slice(l));
+                this.debug>=DEBUG.SILLY&&console.log("Getting length",buff.slice(l));
                 [buff,l] = decodeLength(buff.slice(l));
-                this.debug>=SILLY&&console.log("Length",l);
+                this.debug>=DEBUG.SILLY&&console.log("Length",l);
                 if (!l) {
-                    this.debug>=DEBUG&&console.log('End of data, nothing left to process');
+                    this.debug>=DEBUG.DEBUG&&console.log('End of data, nothing left to process');
                     go=false;
                     return {b:Buffer.from([]),len:0,o:[]};
                 }
                 if (buff.length<l) {
-                    this.debug>=DEBUG&&console.log("Buffer shorter than expected data, waiting for next packet.",{b:buff,len:l,o:o});
+                    this.debug>=DEBUG.DEBUG&&console.log("Buffer shorter than expected data, waiting for next packet.",{b:buff,len:l,o:o});
                     return {b:buff,len:l,o:o};
                 }
             }
         },{b:Buffer.from([]),len:0,o:[]})
-        .subscribe(e=>this.debug>=DEBUG&&console.log('Buffer leftover: ',e.len?e:'Empty'),closeSocket,closeSocket);
+        .subscribe(e=>this.debug>=DEBUG.DEBUG&&console.log('Buffer leftover: ',e.len?e:'Empty'),closeSocket,closeSocket);
 
 
         this.socket.on('end',a => {
-            this.debug>=INFO&&console.log('Connection end '+a);
-            if (this.status==CONNECTED)
+            this.debug>=DEBUG.INFO&&console.log('Connection end '+a);
+            if (this.status==CONNECTION.CONNECTED)
                 // Completing the sentence closes all downstream observables and completes any subscriptions.
                 this.sentence$.complete();
                 // this.handler.close(true);
         });
 
         this.socket.on('error',a => {
-            this.debug>=ERROR&&console.log('Connection error: '+a);
+            this.debug>=DEBUG.ERROR&&console.log('Connection error: '+a);
             // Erroring the sentence closes all downstream observables and issues error any subscriptions.
             this.sentence$.error(a);
         });
@@ -280,7 +265,7 @@ class SocketStream {
         this.setTimeout(timeout);
 
         // This is the function handler for error or complete for the parsing functions.
-        const closeSocket=(e)=>{console.log("Closing Socket ",e);e?this.socket.destroy(e):this.socket.destroy();}
+        const closeSocket=(e)=>{this.debug>=DEBUG.DEBUG&&console.log("Closing Socket ",e);e?this.socket.destroy(e):this.socket.destroy();}
         /** Listen for complete on stream to dictate if socket will close */
         this.sentence$
             // .do(d=>console.log("Sentence: ",d))
@@ -297,14 +282,14 @@ class SocketStream {
     }
 
     setDebug(d) {
-        this.debug>=DEBUG&&console.log('SocketStream::setDebug',[d]);
+        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::setDebug',[d]);
         this.debug=d;
     }
 
     setTimeout(timeout) {
-        this.debug>=DEBUG&&console.log('SocketStream::setTimeout',[timeout]);
+        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::setTimeout',[timeout]);
         this.socket.setTimeout(timeout*1000,e=>{ // the socket timed out. According to the NodeJS api docs, right after this, it will be._closed.
-            if (this.status!==CONNECTED) {
+            if (this.status!==CONNECTION.CONNECTED) {
                 this.debug&&console.log('Socket Timeout');
                 this.sentence$.error("Timeout: ",JSON.stringify(e));
                 // self.emit('error','Timeout Connecting to host',self);
@@ -314,11 +299,12 @@ class SocketStream {
     }
     /** Connect the socket */
     connect(host,port,cb) {
-        this.debug>=DEBUG&&console.log('SocketStream::Connect',[host,port,cb]);
-        this.status=CONNECTING;
+        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::Connect',[host,port,cb]);
+        this.status=CONNECTION.CONNECTING;
+        this.host = host;
         this.socket.connect(port,host,(...args)=>{
-            this.debug&&console.log('Socket Connected');
-            this.status=CONNECTED;
+            this.debug>=DEBUG.INFO&&console.log('Socket Connected');
+            this.status=CONNECTION.CONNECTED;
             cb(...args);
         });
     }
@@ -330,17 +316,17 @@ class SocketStream {
 
     @autobind
     write(data) { // This shouldn't be called directly. Please use channels.
-        this.debug>=MikroNode.DEBUG&&console.log('SocketStream::write',[data]);
-        if (!this.socket||!(this.status&(CONNECTED|CONNECTING))) {
-            this.debug>MikroNode.WARN&&console.log('write: not connected ');
+        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write',[data]);
+        if (!this.socket||!(this.status&(CONNECTION.CONNECTED|CONNECTION.CONNECTING))) {
+            this.debug>DEBUG.WARN&&console.log('write: not connected ');
             return;
         }
         if (typeof(data)===STRING_TYPE) data=[data];
         else if (!Array.isArray(data)) return;
         data.forEach(i => {
             try {
-                this.debug>=MikroNode.DEBUG&&console.log('write: sending '+i);
-                this.socket.write(encodeString(i,this.debug&MikroNode.SILLY));
+                this.debug>=DEBUG.DEBUG&&console.log('write: sending '+i);
+                this.socket.write(encodeString(i,this.debug&DEBUG.SILLY));
             } catch(error) {
                 this.sentence$.error(error);
             }
@@ -348,3 +334,4 @@ class SocketStream {
         this.socket.write(nullString);
     }
 }
+

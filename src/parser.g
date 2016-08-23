@@ -20,15 +20,16 @@ value
   = v:[^\r\n\0]+ {return v.join('')}
 
 end
-  = "!done" s tag:tag {return {type: "done_tag", id:tag}}
-  / "!done" s "=ret=" ret:[a-z0-9]+    {return {type: "done_ret", id:ret.join('')}}
-  / "!done"            { return {type: "done" }}
-  / tag:tag                 { return {type: "tag", id:tag }}
-  / t:trap            { return t  }
-  / f:fatal            { return { type: "fatal", data:f } }
+  = "!done" s tag:tag s "=ret=" ret:[a-z0-9]+ {return {type: "done_ret", id: tag, data:ret.join('')}}
+  / "!done" s tag:tag                         {return {type: "done_tag", id:tag}}
+  / "!done" s "=ret=" ret:[a-z0-9]+           {return {type: "done_ret", data:ret.join('')}}
+  / "!done"                                   {return {type: "done" }}
+  / tag:tag                                   {return {type: "tag", id:tag }}
+  / t:trap                                    {return {type: "trap", trap: t}  }
+  / f:fatal                                   {return {type: "fatal", data:f } }
 
 tag 
-  = ".tag=" id:[0-9]+ s {return id.join('')}
+  = ".tag=" id:[0-9]+ {return id.join('')}
 
 trap
   = "!trap" s d:data+ { return {type:"trap", data:d} }
