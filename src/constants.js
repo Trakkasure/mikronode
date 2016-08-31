@@ -49,6 +49,7 @@ const EVENT = {
   , TAG: 'tag'
   , DONE_RET_TAG: 'done_ret_tag'
   , DONE_TAG: 'done_tag'
+  , DATA: 'data'  // This is an artifical event, not one from the API
 };
 
-export {STRING_TYPE, DEBUG, CONNECTION, CHANNEL, EVENTS, connectionLabels};
+export {STRING_TYPE, DEBUG, CONNECTION, CHANNEL, EVENT, connectionLabels};

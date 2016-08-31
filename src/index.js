@@ -5,8 +5,8 @@ import {Subject, Observable} from 'rxjs';
 import {autobind} from 'core-decorators';
 import crypto from 'crypto';
 
-import {hexDump, decodeLength, encodeString} from './Util.js';
-import {STRING_TYPE, DEBUG, CONNECTION} from './constants.js';
+import {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj} from './Util.js';
+import {STRING_TYPE, DEBUG, CONNECTION,CHANNEL,EVENT} from './constants.js';
 import parser from './parser.js';
 
 import Connection from './Connection';
@@ -145,7 +145,7 @@ class MikroNode {
             };
             this.debug>=DEBUG.SILLY&&console.log('Connecting to remote host');
             this.sock.connect(this.host,this.port,connected);
-            this.sock.getStream().sentence.subscribe(null,null,reject); // reject promise on error.
+            this.sock.getStream().sentence.subscribe(null,reject,null); // reject promise on error.
         });
         // Connect to the server.
         return promise;
@@ -153,8 +153,8 @@ class MikroNode {
 }
 
 // Object.keys(DEBUG).forEach(k=>MikroNode[k]=DEBUG[k]);
-export default Object.assign(MikroNode,DEBUG);
-
+const api=Object.assign(MikroNode,DEBUG);
+export default Object.assign(api,{CONNECTION, CHANNEL, EVENT, resultsToObj});
 
 /** Handles the socket connection and parsing of infcoming data. */
 /* This entire class is private (not exported) */
@@ -295,7 +295,6 @@ class SocketStream {
                 // self.emit('error','Timeout Connecting to host',self);
             }
         });
-
     }
     /** Connect the socket */
     connect(host,port,cb) {
@@ -315,7 +314,11 @@ class SocketStream {
     }
 
     @autobind
-    write(data) { // This shouldn't be called directly. Please use channels.
+    write(data,args) {
+        if (args && typeof(args)===typeof({}))  {
+            this.debug>=DEBUG.SILLY&&console.log("Converting obj to args",obj);
+            data=data.concat(objToAPIParams(args,data[0].split('/').pop()));
+        }
         this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write',[data]);
         if (!this.socket||!(this.status&(CONNECTION.CONNECTED|CONNECTION.CONNECTING))) {
             this.debug>DEBUG.WARN&&console.log('write: not connected ');

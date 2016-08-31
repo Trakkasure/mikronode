@@ -20,20 +20,20 @@ value
   = v:[^\r\n\0]+ {return v.join('')}
 
 end
-  = "!done" s tag:tag s "=ret=" ret:[a-z0-9]+ {return {type: "done_ret", id: tag, data:ret.join('')}}
+  = t:trap                                    {return {type: "trap", trap: t}  }
+  / f:fatal                                   {return {type: "fatal", data:f } }
+  / "!done" s tag:tag s "=ret=" ret:ns {return {type: "done_ret", id: tag, data:ret.join('')}}
   / "!done" s tag:tag                         {return {type: "done_tag", id:tag}}
   / "!done" s "=ret=" ret:[a-z0-9]+           {return {type: "done_ret", data:ret.join('')}}
   / "!done"                                   {return {type: "done" }}
   / tag:tag                                   {return {type: "tag", id:tag }}
-  / t:trap                                    {return {type: "trap", trap: t}  }
-  / f:fatal                                   {return {type: "fatal", data:f } }
 
 tag 
   = ".tag=" id:[a-zA-Z_\-0-9]+ {return id.join('')}
 
 trap
   = "!trap" s d:data+ { return {type:"trap", data:d} }
-  / "!trap" s tag:tag s d:data+ { return {type:"trap", tag:tag, data:d}  }
+  / "!trap" s tag:tag s d:data+ { return {type:"trap", tag:tag, data:d} }
 
 fatal
   = "!fatal" s v:value {return v}
@@ -43,14 +43,8 @@ fatal
 s
   = [ \t\r\n\f\0x00]* {return ""}
 
-w
-  = s?
-
-nl
-  = "\n"
-  / "\r\n"
-  / "\r"
-  / "\f"
+ns
+  = [^ \t\r\n\f\0x00]+
 
 null
   = [\0x00]

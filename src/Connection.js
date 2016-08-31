@@ -27,11 +27,17 @@ export default class Connection extends events.EventEmitter {
 
         this.stream=stream;
 
+        const rejectAndClose = d=>{
+            p.reject(d);
+            this.close();
+        };
+
         login.filter(d=>d.type===EVENT.TRAP)
-             .subscribe(trap=>{
-                this.emit('trap',trap.data)
-                this.close();
-             });
+             .do(t=> {
+                this.emit('trap',t.trap.data)
+                this.debug&&console.log('Trap during login: ',t.trap);
+              }).map(t=>t.trap.data)
+             .subscribe(rejectAndClose,rejectAndClose);
 
         login.filter(d=>d.type===EVENT.DONE_RET)
              .subscribe(data=>{
@@ -56,16 +62,13 @@ export default class Connection extends events.EventEmitter {
                 this.debug>=DEBUG.INFO&&console.log('Connected');
                 p.resolve(this);
               },
-              e=>{
-                this.debug&&console.log('Error in connection: '+e);
-                p.reject(e);
-              },
+              rejectAndClose,
               ()=>{
                 this.debug>=DEBUG.DEBUG&&console.log("Login stream complete");
               }
              );
 
-        stream.read.subscribe(null,null,e=>{this.channels.forEach(c=>c.complete())});
+        stream.read.subscribe(null,null,e=>this.channels.forEach(c=>c.complete()));
     }
 
     close() {
@@ -98,13 +101,14 @@ export default class Connection extends events.EventEmitter {
         }
         this.debug>=DEBUG.SILLY&&console.log("Creating proxy stream");
         let s = {
-          "read": this.stream.read.filter(e=>e.id==id),
-          "write": (d) => {
+          "read": this.stream.read
+                      .filter(e=>e.id==id),
+          "write": (d,args) => {
               if (typeof(d)===STRING_TYPE)
                 d=d.split("\n");
               if (Array.isArray(d)&&d.length) {
                 d.push('.tag='+id);
-                this.stream.write(d);
+                return this.stream.write(d,args);
               }
               else return;
           },

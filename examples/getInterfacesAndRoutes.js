@@ -9,20 +9,26 @@ device.connect('username','password').then(function(conn) {
     var c2=conn.openChannel();
     c1.closeOnDone(true);
     c2.closeOnDone(true);
+
     console.log('Getting Interfaces');
     c1.write('/interface/ethernet/print');
     console.log('Getting routes');
     c2.write('/ip/route/print');
 
-    c1.data // filter is pointless since data is only data.filter(function(d) {return d.type=='data'})
+    c1.data // get only data here
       .subscribe(function(data) { // feeds in one result line at a time.
-          console.log(JSON.stringify(data));
+          console.log('Interfaces:');
+          console.log(JSON.stringify(data,true,2));
        })
 
     // In this one, we wait for the data to be done before running handler.
-    c2.bufferedStream
+    c2.done // return here only when all data is received.
       .subscribe(function(data){ // feeds in all results at once.
         console.log('Routes:');
-        data.forEach(function(i){console.log(JSON.stringify(i))});
+        // data.forEach(function(i){console.log(JSON.stringify(i,4,true))});
+        console.log(JSON.stringify(data,true,2));
       });
+
+},function(err) {
+  console.log("Error connecting:",err);
 });

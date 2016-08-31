@@ -95,4 +95,12 @@ function hexDump(data) {
     }
 }
 
-export {hexDump, decodeLength, encodeString};
+function objToAPIParams(obj,type) {
+    const prefix=type==='print'?'?':'=';
+    return Object.keys(obj).map(k=>obj[k]?`${prefix}${k}=${obj[k]}`:`${prefix}${k}`);
+}
+
+function resultsToObj(r) {
+    return r.reduce((p,f)=>{p[f.field]=f.value;return p},{});
+}
+export {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj};
