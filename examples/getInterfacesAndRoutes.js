@@ -18,7 +18,7 @@ device.connect('username','password').then(function(conn) {
     c1.data // get only data here
       .subscribe(function(data) { // feeds in one result line at a time.
           console.log('Interfaces:');
-          console.log(JSON.stringify(data,true,2));
+          console.log(JSON.stringify(data.data,true,2));
        })
 
     // In this one, we wait for the data to be done before running handler.
@@ -26,7 +26,7 @@ device.connect('username','password').then(function(conn) {
       .subscribe(function(data){ // feeds in all results at once.
         console.log('Routes:');
         // data.forEach(function(i){console.log(JSON.stringify(i,4,true))});
-        console.log(JSON.stringify(data,true,2));
+        console.log(JSON.stringify(data.data,true,2));
       });
 
 },function(err) {

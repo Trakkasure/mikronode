@@ -19,9 +19,9 @@ device.connect('username','password').then(
 		channel2.write('/ip/address/print');
 
 		// Print data from channel 1
-		channel1.data.subscribe(e=>console.log("Data 1: ",e));
+		channel1.data.subscribe(e=>console.log("Data 1: ",e.data));
 		// Pring data from channel 2
-		channel2.data.subscribe(e=>console.log("Data 2: ",e));
+		channel2.data.subscribe(e=>console.log("Data 2: ",e.data));
 
 	}
 );
