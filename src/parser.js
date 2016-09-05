@@ -157,8 +157,8 @@ module.exports = /*
         peg$c13 = /^[^\r\n\0]/,
         peg$c14 = peg$classExpectation(["\r", "\n", "\0"], true, false),
         peg$c15 = function(v) {return v.join('')},
-        peg$c16 = function(t) {return {type: "trap", trap: t}  },
-        peg$c17 = function(f) {return {type: "fatal", data:f } },
+        peg$c16 = function(f) {return {type: "fatal", data:f } },
+        peg$c17 = function(t) {return t},
         peg$c18 = "!done",
         peg$c19 = peg$literalExpectation("!done", false),
         peg$c20 = "=ret=",
@@ -176,7 +176,7 @@ module.exports = /*
         peg$c32 = peg$classExpectation([["a", "z"], ["A", "Z"], "_", "-", ["0", "9"]], false, false),
         peg$c33 = "!trap",
         peg$c34 = peg$literalExpectation("!trap", false),
-        peg$c35 = function(tag, d) { return {type:"trap", tag:tag, data:d} },
+        peg$c35 = function(tag, d) { return {type:"trap", id:tag, data:d} },
         peg$c36 = function(d) { return {type:"trap", data:d} },
         peg$c37 = "!fatal",
         peg$c38 = peg$literalExpectation("!fatal", false),
@@ -623,7 +623,7 @@ module.exports = /*
       var s0, s1, s2, s3, s4, s5, s6;
 
       s0 = peg$currPos;
-      s1 = peg$parsetrap();
+      s1 = peg$parsefatal();
       if (s1 !== peg$FAILED) {
         peg$savedPos = s0;
         s1 = peg$c16(s1);
@@ -631,7 +631,7 @@ module.exports = /*
       s0 = s1;
       if (s0 === peg$FAILED) {
         s0 = peg$currPos;
-        s1 = peg$parsefatal();
+        s1 = peg$parsetrap();
         if (s1 !== peg$FAILED) {
           peg$savedPos = s0;
           s1 = peg$c17(s1);
@@ -808,20 +808,6 @@ module.exports = /*
             }
           }
         }
-      }
-
-      return s0;
-    }
-
-    function peg$parsedone() {
-      var s0;
-
-      if (input.substr(peg$currPos, 5) === peg$c18) {
-        s0 = peg$c18;
-        peg$currPos += 5;
-      } else {
-        s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c19); }
       }
 
       return s0;

@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "2.0.0",
+  "version": "2.0.0-beta.2",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "scripts": {
     "build": "webpack --watch --color -d --progress"
@@ -21,7 +21,7 @@
   "bugs": "https://github.com/Trakkasure/mikronode/issues",
   "devDependencies": {
     "babel": "^6.5.2",
-    "babel-cli": "^6.10.1",
+    "babel-cli": "^6.14.0",
     "babel-eslint": "^6.1.2",
     "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.2.1",
@@ -31,7 +31,7 @@
     "babel-plugin-transform-replace-object-assign": "^0.2.1",
     "babel-plugin-transform-runtime": "^6.12.0",
     "babel-polyfill": "^6.9.1",
-    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-es2015": "^6.14.0",
     "babel-preset-stage-1": "^6.5.0",
     "chai": "^3.5.0",
     "change-emitter": "^0.1.2",
@@ -40,14 +40,10 @@
     "simple-assign": "^0.1.0",
     "uglify-js": ">=1.2.5",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1"
+    "webpack-dev-server": "^1.15.0"
   },
   "dependencies": {
-    "crossfilter": "^1.3.12",
-    "react": "^15.3.0",
-    "react-dom": "^15.3.0",
-    "rxjs": "^5.0.0-beta.10",
-    "symbol-observable": "^1.0.1"
+    "rxjs": "^5.0.0-beta.10"
   },
   "main": "dist/index.js",
   "engines": {

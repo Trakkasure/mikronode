@@ -13,10 +13,6 @@ module.exports = {
                 "presets": ['es2015','stage-1']
               , "plugins": [
                     ["transform-replace-object-assign", "simple-assign"]
-                  , ["transform-runtime", {
-                        "polyfill": false
-                      , "regenerator": true
-                    }]
                   , "transform-dev-warning"
                   , "add-module-exports"
                   , "transform-decorators-legacy"

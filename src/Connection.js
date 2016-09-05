@@ -19,6 +19,9 @@ export default class Connection extends events.EventEmitter {
     @Private
     debug=DEBUG.NONE;
 
+    @Private
+    closeOnDone=false;
+
     constructor(stream,loginHandler,p) {
         super();
         const login=stream.read
@@ -83,7 +86,9 @@ export default class Connection extends events.EventEmitter {
 
     /** If all channels are closed, close this connection */
     closeOnDone(b) {
-      this.closeOnDone=b;
+      if (b) 
+        this.closeOnDone=b;
+      else return this.closeOnDone;
       return this;
     }
 
@@ -123,6 +128,7 @@ export default class Connection extends events.EventEmitter {
           },
           "done": ()=>{
               this.debug>=DEBUG.DEBUG&&console.log("Channel done (%s)",id);
+              // If Connection closeOnDone, then check if all channels are done.
               if (this.closeOnDone) {
                   const cl=this.channels.filter(c=>c.status&(Channel.OPEN|Channel.RUNNING));
                   if (cl.length) return false;

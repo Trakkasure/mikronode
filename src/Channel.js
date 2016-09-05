@@ -54,7 +54,6 @@ export default class Channel extends events.EventEmitter {
         this.id=id;
         this.read=stream.read.takeWhile(()=>!(this.status&(CHANNEL.CLOSING|CHANNEL.CLOSED)))
             .do(e=>{
-                console.log(e);
                 this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::Event (%s)',id,e.type);
                 if (e.type==EVENT.DONE_TAG||e.type==EVENT.DONE||e.type==EVENT.DONE_RET) {
                     this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::Triggering Done',id);
@@ -95,7 +94,7 @@ export default class Channel extends events.EventEmitter {
             .subscribe(buffer=>{
                 this.debug>=DEBUG.INFO&&console.log('Channel(%s)::DONE (%s)',id);
                 this.emit(EVENT.DONE,buffer);
-                if (this.status&CHANNEL.CLOSING||this.stream.done()) {
+                if ((this.status&CHANNEL.CLOSING)||this.closeOnDone||this.stream.done()) {
                     this.debug>=DEBUG.SILLY&&console.log("Channel (%s) closing",id);
                     this.close();
                 }
@@ -108,7 +107,7 @@ export default class Channel extends events.EventEmitter {
             return this;
         }
         this.status=CHANNEL.RUNNING;
-        this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d);
+        this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
         this.stream.write(d,args);
         return this;
     }
