@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0-beta.4",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "scripts": {
     "build": "webpack --color --progress",
