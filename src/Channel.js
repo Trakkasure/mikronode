@@ -196,7 +196,7 @@ export default class Channel extends events.EventEmitter {
                 this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
                 this.stream.write(d,args);
                 return this;
-            }));
+            });
         this.write.subscribe([d,args]=>this.sync&&this.buffer.push([d,args]);
     }
 
