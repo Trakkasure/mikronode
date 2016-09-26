@@ -108,6 +108,15 @@ class MikroNode {
         this.port=port;
     }
 
+    /** set tls options for this connection */
+    setTLS(options) {
+        if (options) {
+            this.tls=options
+            return this;
+        }
+        return this.tls;
+    }
+
     /** Set timeout for socket connecion */
     setTimeout(timeout) {
         this.timeout=timeout;

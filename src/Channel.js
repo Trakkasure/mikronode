@@ -5,39 +5,129 @@ import {DEBUG, CONNECTION, CHANNEL, EVENT} from './constants.js';
 
 export default class Channel extends events.EventEmitter {
 
+    /** ID of the channel. 
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     id;
 
+    /** Current channel status. See Constants for list of channel status (CHANNEL)
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     status=CHANNEL.OPEN;
 
+    /** ID of the channel. 
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     closed=false;
 
+    /** In/Out stream object for this channel.
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     stream;
 
+    /** Current Debug level for this channel.
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     debug=DEBUG.NONE;
 
+    /** If wether to call close on this channel when done event occurs.
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     closeOnDone=false;
 
+    /** If wether to call close on this channel when trap event occurs.
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     closeOnTrap=false;
 
+    /** The buffered stream. Used to hold all results until done or trap events occur.
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     bufferedStream;
 
+    /** "data stream" for this channel. no other sentences execpt data sentences get to this point.
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     data;
 
+    /** contains all sentences for this stream
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     read;
 
+    /** Trap stream
+     * @private
+     * @instance
+     * @member {boolean} id
+     * @memberof Channel
+    **/
     @Private
     trap;
 
+    /** If commands should be synchronous.
+     * @public
+     * @instance
+     * @member {boolean} sync
+     * @memberof Channel
+    **/
+    @Private
+    sync=true;
+
+    /** buffered data.
+     * @private
+     * @instance
+     * @member {Subject} write
+     * @memberof Channel
+    **/
+    @Private
+    buffer = [];
+    /** 
+      * Create new channel on a connection. This should not be called manually. Use Connection.openChannel
+      * @constructor
+      * @param {string|number} id - ID of the channel
+      * @param {object} stream - stream object representing link to connection.
+
+    **/
     constructor(id,stream,debug,closeOnDone) {
         super();
         this.debug=debug;
@@ -87,34 +177,47 @@ export default class Channel extends events.EventEmitter {
 
         this.bufferedStream=this.data
             .buffer(index)
-            .map(d=>({id:id,type:EVENT.DONE,data:d.map(d=>d.data)}))
+            .map(d=>({id:id,type:EVENT.DONE,data:d.map(d=>d.data)}));
             // .combineLatest(index,(buffer,index)=>({...buffer,index}));
 
         this.bufferedStream
             .subscribe(buffer=>{
                 this.debug>=DEBUG.INFO&&console.log('Channel(%s)::DONE (%s)',id);
                 this.emit(EVENT.DONE,buffer);
-                if ((this.status&CHANNEL.CLOSING)||this.closeOnDone||this.stream.done()) {
+                if (this.buffer.length==0&&(this.status&CHANNEL.CLOSING)||this.closeOnDone||this.stream.done()) {
                     this.debug>=DEBUG.SILLY&&console.log("Channel (%s) closing",id);
                     this.close();
                 }
             });
+
+        this.index.flatMapTo(Observable.using(()=>buffer, (r)=>this.sync?(buffer.length?Observable.of(buffer.shift()):this.write.take(1)):this.write))
+            .subscribe(([d,args])=>{
+                this.status=CHANNEL.RUNNING;
+                this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
+                this.stream.write(d,args);
+                return this;
+            }));
+        this.write.subscribe([d,args]=>this.sync&&this.buffer.push([d,args]);
     }
 
     write(d,args) {
         if (this.status&(CHANNEL.CLOSED|CHANNEL.CLOSING)) {
-            this.status>=DEBUG.WARN&&console.log("Cannot write on closed or closing channel");
+            this.debug>=DEBUG.WARN&&console.log("Cannot write on closed or closing channel");
             return this;
         }
-        this.status=CHANNEL.RUNNING;
-        this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
-        this.stream.write(d,args);
-        return this;
+        this.write.next([d,args]);
     }
 
     // status() { return this.status }
-    close() { 
-        if (this.status==CHANNEL.CLOSED) return;
+    close(force) { 
+        if (this.status&CHANNEL.RUNNING) {
+            if (force) this.stream.write('/cancel');
+            else this.write('/cancel');
+            this.closeOnDone(true);
+            this.status=CHANNEL.CLOSING;
+            return;
+        }
+        if (this.status&CHANNEL.CLOSED) return;
         this.status=CHANNEL.CLOSED;
         this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSED',this.id);
         this.stream.close();
@@ -150,6 +253,14 @@ export default class Channel extends events.EventEmitter {
 
     get status() {
         return this.status;
+    }
+
+    sync() {
+        if (b) {
+            this.sync=!!b;
+            return this;
+        }
+        return this.sync;
     }
 
     pipeFrom(stream$) {
