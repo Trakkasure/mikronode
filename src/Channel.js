@@ -35,7 +35,7 @@ export default class Channel extends events.EventEmitter {
     /** In/Out stream object for this channel.
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {Object} stream
      * @memberof Channel
     **/
     @Private
@@ -44,7 +44,7 @@ export default class Channel extends events.EventEmitter {
     /** Current Debug level for this channel.
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {int} debug
      * @memberof Channel
     **/
     @Private
@@ -53,7 +53,7 @@ export default class Channel extends events.EventEmitter {
     /** If wether to call close on this channel when done event occurs.
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {boolean} closeOnDone
      * @memberof Channel
     **/
     @Private
@@ -62,7 +62,7 @@ export default class Channel extends events.EventEmitter {
     /** If wether to call close on this channel when trap event occurs.
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {boolean} closeOnTrap
      * @memberof Channel
     **/
     @Private
@@ -71,7 +71,7 @@ export default class Channel extends events.EventEmitter {
     /** The buffered stream. Used to hold all results until done or trap events occur.
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {Observable} bufferedStream
      * @memberof Channel
     **/
     @Private
@@ -80,7 +80,7 @@ export default class Channel extends events.EventEmitter {
     /** "data stream" for this channel. no other sentences execpt data sentences get to this point.
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {Observable} data
      * @memberof Channel
     **/
     @Private
@@ -89,7 +89,7 @@ export default class Channel extends events.EventEmitter {
     /** contains all sentences for this stream
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {Observable} read
      * @memberof Channel
     **/
     @Private
@@ -98,11 +98,20 @@ export default class Channel extends events.EventEmitter {
     /** Trap stream
      * @private
      * @instance
-     * @member {boolean} id
+     * @member {Observable} trap
      * @memberof Channel
     **/
     @Private
     trap;
+
+    /** write stream
+     * @private
+     * @instance
+     * @member {Subject} write
+     * @memberof Channel
+    **/
+    @Private
+    write=new Subject();
 
     /** If commands should be synchronous.
      * @public
@@ -113,10 +122,10 @@ export default class Channel extends events.EventEmitter {
     @Private
     sync=true;
 
-    /** buffered data.
+    /** Command buffer. All output commands go through this buffer.
      * @private
      * @instance
-     * @member {Subject} write
+     * @member {Array} buffer
      * @memberof Channel
     **/
     @Private
@@ -182,22 +191,39 @@ export default class Channel extends events.EventEmitter {
 
         this.bufferedStream
             .subscribe(buffer=>{
-                this.debug>=DEBUG.INFO&&console.log('Channel(%s)::DONE (%s)',id);
+                this.debug>=DEBUG.INFO&&console.log('Channel(%s)::DONE',id);
                 this.emit(EVENT.DONE,buffer);
+                // Check command buffer, if it has items, flush them.
                 if (this.buffer.length==0&&(this.status&CHANNEL.CLOSING)||this.closeOnDone||this.stream.done()) {
                     this.debug>=DEBUG.SILLY&&console.log("Channel (%s) closing",id);
                     this.close();
                 }
             });
 
-        this.index.flatMapTo(Observable.using(()=>buffer, (r)=>this.sync?(buffer.length?Observable.of(buffer.shift()):this.write.take(1)):this.write))
+        index.flatMapTo(Observable.using(
+                ()=>this.buffer
+              , (r)=>{
+                    if (this.sync) {
+                        if (this.buffer.length) {
+                            return Observable.of(this.buffer.shift());
+                        } else
+                            return this.write.take(1);
+                    } else
+                        return this.write;
+                }
+            ))
             .subscribe(([d,args])=>{
                 this.status=CHANNEL.RUNNING;
                 this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
                 this.stream.write(d,args);
                 return this;
             });
-        this.write.subscribe([d,args]=>this.sync&&this.buffer.push([d,args]);
+        this.write.subscribe(([d,args])=>{
+            console.log("pushing command to buffer...",d);
+            if (this.status&CHANNEL.RUNNING && this.sync)
+                this.buffer.push([d,args]);
+            else this.stream.write(d,args);
+        });
     }
 
     write(d,args) {
@@ -212,7 +238,7 @@ export default class Channel extends events.EventEmitter {
     close(force) { 
         if (this.status&CHANNEL.RUNNING) {
             if (force) this.stream.write('/cancel');
-            else this.write('/cancel');
+            // else this.write('/cancel');
             this.closeOnDone(true);
             this.status=CHANNEL.CLOSING;
             return;
