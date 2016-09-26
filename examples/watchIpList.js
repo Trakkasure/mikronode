@@ -9,7 +9,7 @@ var device = new MikroNode('10.10.10.1');
 
 var removeId=[];
 // Connect to the MikroTik device.
-device.connect('username','password').then(function(conn) {
+device.connect('test','').then(function(conn) {
 
     var channel=conn.openChannel('all_addresses');
     channel.closeOnDone(true); // only use this channel for one command.
