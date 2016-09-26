@@ -219,7 +219,6 @@ export default class Channel extends events.EventEmitter {
                 return this;
             });
         this.write.subscribe(([d,args])=>{
-            console.log("pushing command to buffer...",d);
             if (this.status&CHANNEL.RUNNING && this.sync)
                 this.buffer.push([d,args]);
             else this.stream.write(d,args);
