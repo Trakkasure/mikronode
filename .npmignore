@@ -1,1 +1,7 @@
 node_modules
+examples
+test
+src
+constants.js
+webpack.config.babel.js
+.babelrc
