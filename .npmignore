@@ -1,1 +1,9 @@
 node_modules
+api.py
+examples/old_version
+doWork.js
+lib
+monitor
+npm-debug.log
+out.txt
+t.js
