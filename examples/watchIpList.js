@@ -35,7 +35,7 @@ device.connect('username','password').then(function(conn) {
                 } else {
                     console.log("New IP detected",data);
                     removeId.push(data['.id']);
-                    return last.concat(stream.data);
+                    return last.concat(data);
                 }
             }
         },[]).subscribe(function(changes) {
