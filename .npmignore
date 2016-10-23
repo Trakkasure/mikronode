@@ -1,9 +1,14 @@
 node_modules
 api.py
-examples/old_version
 doWork.js
 lib
 monitor
 npm-debug.log
 out.txt
 t.js
+examples
+test
+src
+constants.js
+webpack.config.babel.js
+.babelrc
