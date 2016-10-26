@@ -4,6 +4,7 @@ start
 
 packet
   = re s tag:tag s data:data+ { return {type: "data", id:tag, data:data, tag:tag} }
+  / re s data:data+ s tag:tag s { return {type: "data", id:tag, data:data, tag:tag} }
   / re s data:data+ e:end s { return {type: e.type, id:e.id, data:data, tag:tag} }
   / e:end s {return e}
 
@@ -28,7 +29,7 @@ end
   / "!done"                                   {return {type: "done" }}
   / tag:tag                                   {return {type: "tag", id:tag }}
 
-tag 
+tag
   = ".tag=" id:[a-zA-Z_\-0-9]+ {return id.join('')}
 
 trap
