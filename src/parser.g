@@ -3,8 +3,9 @@ start
   / null
 
 packet
-  = re s tag:tag s data:data+ { return {type: "data", id:tag, data:data, tag:tag} }
-  / re s data:data+ e:end s { return {type: e.type, id:e.id, data:data, tag:tag} }
+  = re s tag:tag data:data+ { return {type: "data", data:data, tag:tag} }
+  / re s data:data+ tag:tag { return {type: "data", data:data, tag:tag} }
+  / re s data:data+ { return {type: "data", data:data} }
   / e:end s {return e}
 
 re
@@ -18,18 +19,19 @@ identifier
 
 value
   = v:[^\r\n\0]+ {return v.join('')}
+  / v:[\r\n\0] {return ''}
 
 end
   = f:fatal                                   {return {type: "fatal", data:f } }
   / t:trap                                    {return t}
-  / "!done" s tag:tag s "=ret=" ret:ns {return {type: "done_ret", id: tag, data:ret.join('')}}
-  / "!done" s tag:tag                         {return {type: "done_tag", id:tag}}
   / "!done" s "=ret=" ret:[a-z0-9]+           {return {type: "done_ret", data:ret.join('')}}
+  / "!done" s tag:tag "=ret=" ret:ns          {return {type: "done_ret", tag: tag, data:ret.join('')}}
+  / "!done" s tag:tag                         {return {type: "done_tag", tag:tag}}
   / "!done"                                   {return {type: "done" }}
-  / tag:tag                                   {return {type: "tag", id:tag }}
+  / tag:tag                                   {return {type: "tag", tag:tag }}
 
 tag 
-  = ".tag=" id:[a-zA-Z_\-0-9]+ {return id.join('')}
+  = ".tag=" id:[a-zA-Z_\-0-9]+ s {return id.join('')}
 
 trap
   = "!trap" s tag:tag s d:data+ { return {type:"trap", tag:tag, data:d} }

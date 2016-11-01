@@ -37,9 +37,9 @@ export default class Connection extends events.EventEmitter {
 
         login.filter(d=>d.type===EVENT.TRAP)
              .do(t=> {
-                this.emit('trap',t.trap.data)
-                this.debug&&console.log('Trap during login: ',t.trap);
-              }).map(t=>t.trap.data)
+                this.emit('trap',t.data)
+                this.debug&&console.log('Trap during login: ',t.data);
+              }).map(t=>t.data)
              .subscribe(rejectAndClose,rejectAndClose);
 
         login.filter(d=>d.type===EVENT.DONE_RET)
@@ -107,7 +107,7 @@ export default class Connection extends events.EventEmitter {
         this.debug>=DEBUG.SILLY&&console.log("Creating proxy stream");
         let s = {
           "read": this.stream.read
-                      .filter(e=>e.id==id),
+                      .filter(e=>e.tag==id),
           "write": (d,args) => {
               if (typeof(d)===STRING_TYPE)
                 d=d.split("\n");
