@@ -1,14 +1,7 @@
 node_modules
-api.py
-doWork.js
-lib
-monitor
 npm-debug.log
-out.txt
-t.js
 examples
 test
 src
-constants.js
 webpack.config.babel.js
 .babelrc
