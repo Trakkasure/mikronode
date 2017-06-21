@@ -1,23 +1,34 @@
-api=require('../lib/index.js');
+var api=require('../dist/mikronode.js');
 
-c1=new api('192.168.0.1','admin','');
-c1.closeOnDone(true);
-c1.connect(function(c) {
-    var o=this.openChannel();
-    o.closeOnDone(true);
-    o.write(['/interface/print'],function(channel){
-        console.log('Getting Interfaces');
-        channel.once('done',function(p,chan) {
-            p=api.parseItems(p);
-            p.forEach(function(i){console.log(JSON.stringify(i))});
-        });
-    });
-    o.write('/ip/route/print',function(channel){
-        console.log('Getting routes');
-        channel.on('done',function(p,chan) {
-            console.log('Routes:');
-            p=api.parseItems(p);
-            p.forEach(function(i){console.log(JSON.stringify(i))});
-        });
-    });
+var device=new api(/* Host */'10.10.10.1' /*, Port */ /*, Timeout */);
+// device.setDebug(api.DEBUG);
+
+// connect: user, password.
+device.connect('username','password').then(function(conn) {
+    var c1=conn.openChannel();
+    var c2=conn.openChannel();
+    c1.closeOnDone(true);
+    c2.closeOnDone(true);
+
+    console.log('Getting Interfaces');
+    c1.write('/interface/ethernet/print');
+    console.log('Getting routes');
+    c2.write('/ip/route/print');
+
+    c1.data // get only data here
+      .subscribe(function(data) { // feeds in one result line at a time.
+          console.log('Interfaces:');
+          console.log(JSON.stringify(data.data,true,2));
+       })
+
+    // In this one, we wait for the data to be done before running handler.
+    c2.done // return here only when all data is received.
+      .subscribe(function(data){ // feeds in all results at once.
+        console.log('Routes:');
+        // data.forEach(function(i){console.log(JSON.stringify(i,4,true))});
+        console.log(JSON.stringify(data.data,true,2));
+      });
+
+},function(err) {
+  console.log("Error connecting:",err);
 });

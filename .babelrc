@@ -1,0 +1,11 @@
+{
+	"sourceMaps": false,
+        "presets": ['es2015','stage-1']
+      , "plugins": [
+            ["transform-replace-object-assign", "simple-assign"]
+          , "transform-dev-warning"
+          , "add-module-exports"
+          , "transform-decorators-legacy"
+          , "transform-private-properties"
+        ]
+}

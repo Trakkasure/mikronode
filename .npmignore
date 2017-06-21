@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+examples
+test
+src
+webpack.config.babel.js
+.babelrc
