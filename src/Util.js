@@ -101,6 +101,12 @@ function objToAPIParams(obj,type) {
 }
 
 function resultsToObj(r) {
+    if (r.type) {
+        if(Array.isArray(r.data)) return resultsToObj(r.data);
+        return [];
+    }
+    if (r.length&&Array.isArray(r[0])) return r.map(resultsToObj);
+    if (!Array.isArray(r)) return {};
     return r.reduce((p,f)=>{p[f.field]=f.value;return p},{});
 }
 export {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj};

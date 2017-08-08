@@ -111,7 +111,9 @@
   * channel.closeOnDone(b)
       If b == true, when a done event occurs, close the channel after all commands queued have been executed.
   * channel.getId()
-  * channel.write(lines[,optionsObject])  
+  * channel.write(lines[,optionsObject])
+      Returns a promise that is resolved when the command sent is complete and is "done"
+      The promise is rejected if a trap or fatal error occurs.
       Lines can be a string, or an array of strings. If it is a string, then it is split on the EOL character and each resulting line is sent as a separate word (in API speak)
       If lines is an array, then each element is sent unaltered.
       If lines is a string and optionsObject is provided, the optionsObject is converted to standard sentence output: =propertyName=propertyValue
@@ -125,21 +127,20 @@
 
      var api = require('mikronode');
 
-     var connection = new api('192.168.0.1','admin','password');
-     connection.connect(function(conn) {
+     var device = new api('192.168.0.1');
+     device.connect('admin','password').then(function(conn) {
 
         var chan=conn.openChannel();
 
-        chan.write(['/ip/address/add','=interface=ether1','=address=192.168.1.1'],function() {
-           chan.on('trap',function(data) {
-              console.log('Error setting IP: '+data);
-           });
-           chan.on('done',function(data) {
-              console.log('IP Set.');
-           });
-           chan.close();
-           conn.close();
+        chan.write('/ip/address/add',{'interface':'ether1','address':'192.168.1.1'});
+        chan.on('trap',function(data) {
+            console.log('Error setting IP: '+data);
         });
+        chan.on('done',function(data) {
+            console.log('IP Set.');
+        });
+        chan.close();
+        conn.close();
      });
 
 ### Writing the program for the example API conversation on the [Mikrotik Wiki](http://wiki.mikrotik.com/wiki/API#.2Fcancel.2C_simultaneous_commands)
@@ -204,7 +205,7 @@
         var listenChannel=conn.openChannel();
         listenChannel.write('/interface/listen');
 
-        // Each sentence that comes down goes through this.
+        // Each sentence that comes from the device goes through this.
         listenChannel.read.subscribe(function(data) {
             var packet=MikroNode.resultsToObj(data);
             console.log('Interface change: '+JSON.stringify(packet));
@@ -227,7 +228,78 @@
         actionChannel.close(); // The above commands will complete before this is closed.
     });
 
-  The method *decodeLength* and *encodeString* were written based on code [here on the Mikrotik Wiki](http://wiki.mikrotik.com/wiki/API_PHP_class#Class).
+### Promises add simplicity:
+
+    var MikroNode = require('mikronode');
+    var device = new MikroNode('192.168.0.1');
+    device.connect('admin','password').then(function(conn) {
+        console.log("Logged in.")
+        conn.closeOnDone(true); // All channels need to complete before the connection will close.
+        var listenChannel=conn.openChannel("listen");
+
+        // Each sentence that comes from the device goes through the data stream.
+        listenChannel.data.subscribe(function(data) {
+            // var packet=MikroNode.resultsToObj(data);
+            console.log('Interface change: ',JSON.stringify(data));
+        },error=>{
+            console.log("Error during listenChannel subscription",error) // This shouldn't be called.
+        },()=>{
+            console.log("Listen channel done.");
+        });
+
+        // Tell our listen channel to notify us of changes to interfaces.
+        listenChannel.write('/interface/listen').then(result=>{
+            console.log("Listen channel done promise.",result);
+        })
+        // Catch shuold be called when we call /cancel (or listenChannel.close())
+        .catch(error=>console.log("Listen channel rejection:",error));
+
+        // All our actions go through this.
+        var actionChannel=conn.openChannel("action");
+
+        // Do things async. This is to prove that promises work as expected along side streams.
+        actionChannel.sync(false);
+
+        // These will run synchronsously (even though sync is not set to true)
+        console.log("Disabling interface");
+        actionChannel.write('/interface/set',{'disabled':'yes','.id':'ether1'}).then(results=>{
+            console.log("Disable complete.");
+            // Delay 1 second before running next command so that the Interface change listener can report the change.
+            return new Promise((r,x)=>setTimeout(r,1000)).then(()=>actionChannel.write('/interface/set',{'disabled':'no','.id':'ether1'}));
+        })
+        .then(results=>{
+            console.log("Enabled complete.");
+            // Delay 1 second before running next command so that the Interface change listener can report the change.
+            return new Promise((r,x)=>setTimeout(r,1000)).then(()=>actionChannel.write('/interface/getall'));
+        })
+        .then(results=>{
+            var formatted=MikroNode.resultsToObj(results);
+            var columns=[".id","name","mac-address","comment"];
+            var filtered=formatted.map(line=>columns.reduce((p,c)=>{p[c]=line[c];return p},{}));
+            console.log('Interface [ID,Name,MAC-Address]: ',JSON.stringify(filtered,true,4));
+        })
+        .catch(error=>{
+            console.log("An error occurred during one of the above commands: ",error);
+        })
+        // This runs after all commands above, or if an error occurs.
+        .then(nodata=>{
+            console.log("Closing everything.");
+            listenChannel.close(true); // This should call the /cancel command to stop the listen.
+            actionChannel.close();
+        }); 
+
+        // This just watches for responses from the writes in the promises above. There are no results in the set commands, but there is a large result for the getall
+        actionChannel.done.subscribe(function(results) {
+            console.log('Interface (done): ',results);
+        },error=>{
+            console.log("Error during done subscription",error)
+        },()=>{
+            console.log("Action channel done.");
+        });
+    });
+
+
+### The methods *decodeLength* and *encodeString* were written based on code [here on the Mikrotik Wiki](http://wiki.mikrotik.com/wiki/API_PHP_class#Class).
   
 ## License
 
