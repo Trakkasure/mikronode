@@ -1,14 +1,54 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "0.3.3",
+  "version": "2.0.1",
   "author": "Brandon Myers <trakkasure@gmail.com>",
-  "contributors": [ 
-    { "name": "Brandon Myers", "email": "trakkasure@gmail.com" }
+  "scripts": {
+    "build": "webpack --color --progress",
+    "dev": "webpack --watch --color -d --progress",
+    "prepublish":  "npm run build"
+  },
+  "contributors": [
+    {
+      "name": "Brandon Myers",
+      "email": "trakkasure@gmail.com"
+    }
   ],
-  "keywords": ["mikrotik", "socket", "api"],
+  "keywords": [
+    "mikrotik",
+    "socket",
+    "api"
+  ],
   "repository": "git://github.com/trakkasure/mikronode",
-  "bugs" : "https://github.com/Trakkasure/mikronode/issues",
-  "main": "lib/index",
-  "engines": { "node": ">= 0.3.8" }
+  "bugs": "https://github.com/Trakkasure/mikronode/issues",
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-cli": "^6.14.0",
+    "babel-eslint": "^6.1.2",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-dev-warning": "^0.1.0",
+    "babel-plugin-transform-private-properties": "^1.0.2",
+    "babel-plugin-transform-replace-object-assign": "^0.2.1",
+    "babel-plugin-transform-runtime": "^6.12.0",
+    "babel-polyfill": "^6.9.1",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-preset-stage-1": "^6.5.0",
+    "chai": "^3.5.0",
+    "change-emitter": "^0.1.2",
+    "core-decorators": "^0.12.3",
+    "mocha": ">=1.7.4",
+    "simple-assign": "^0.1.0",
+    "uglify-js": ">=1.2.5",
+    "webpack": "^1.13.1",
+    "webpack-dev-server": "^1.15.0"
+  },
+  "dependencies": {
+    "rxjs": "^5.0.0-beta.10"
+  },
+  "main": "dist/mikronode.js",
+  "engines": {
+    "node": ">= 4"
+  }
 }
