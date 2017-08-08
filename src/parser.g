@@ -31,7 +31,8 @@ end
   / tag:tag                                   {return {type: "tag", tag:tag }}
 
 tag 
-  = ".tag=" id:[a-zA-Z_\-0-9]+ s {return id.join('')}
+  = ".tag=" id:[a-zA-Z_\-0-9]+ colon subid:[0-9]+ s {return id.join('')+":"+subid.join('')}
+  / ".tag=" id:[a-zA-Z_\-0-9]+ s {return id.join('')}
 
 trap
   = "!trap" s tag:tag s d:data+ { return {type:"trap", tag:tag, data:d} }
@@ -50,3 +51,6 @@ ns
 
 null
   = [\0x00]
+
+colon
+  = [:]
