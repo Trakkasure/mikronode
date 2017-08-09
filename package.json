@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "scripts": {
     "build": "webpack --color --progress",
@@ -23,7 +23,6 @@
   "bugs": "https://github.com/Trakkasure/mikronode/issues",
   "devDependencies": {
     "babel": "^6.5.2",
-    "babel-cli": "^6.14.0",
     "babel-eslint": "^6.1.2",
     "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.2.1",

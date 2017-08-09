@@ -2,11 +2,11 @@
 // This only verifies that all channels have been eliminated.
 // A more full-featured test is in the works. 
 
-api=require('../lib/index.js')
+var api=require('../lib/index.js')
 
-config=require('./config.js');
+var config=require('./config.js');
 config.push({debug:2}); // Add debug options to see what's happening.
-connection=api.prototype.constructor.apply(api,config)
+var connection=api.prototype.constructor.apply(api,config)
 
 connection.connect(function(c) {
     console.log('Connection established');

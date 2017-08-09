@@ -254,7 +254,7 @@ class SocketStream {
                 }
             }
         },{b:Buffer.from([]),len:0,o:[]})
-        .subscribe(e=>this.debug>=DEBUG.DEBUG&&console.log('Buffer leftover: ',e.len?e:'Empty'),closeSocket,closeSocket);
+        .subscribe(e=>this.debug>=DEBUG.DEBUG&&e.len&&console.log('Buffer leftover: ',e),closeSocket,closeSocket);
 
 
         this.socket.on('end',a => {
@@ -325,10 +325,10 @@ class SocketStream {
     @autobind
     write(data,args) {
         if (args && typeof(args)===typeof({}))  {
-            this.debug>=DEBUG.SILLY&&console.log("Converting obj to args",obj);
+            this.debug>=DEBUG.SILLY&&console.log("Converting obj to args",args);
             data=data.concat(objToAPIParams(args,data[0].split('/').pop()));
         }
-        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write',[data]);
+        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write:',[data]);
         if (!this.socket||!(this.status&(CONNECTION.CONNECTED|CONNECTION.CONNECTING))) {
             this.debug>DEBUG.WARN&&console.log('write: not connected ');
             return;
@@ -337,7 +337,7 @@ class SocketStream {
         else if (!Array.isArray(data)) return;
         data.forEach(i => {
             try {
-                this.debug>=DEBUG.DEBUG&&console.log('write: sending '+i);
+                this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write: sending '+i);
                 this.socket.write(encodeString(i,this.debug&DEBUG.SILLY));
             } catch(error) {
                 this.sentence$.error(error);

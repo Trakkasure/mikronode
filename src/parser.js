@@ -192,6 +192,8 @@ module.exports = /*
         peg$c48 = peg$classExpectation([" ", "\t", "\r", "\n", "\f", "\0", "x", "0", "0"], true, false),
         peg$c49 = /^[\0x00]/,
         peg$c50 = peg$classExpectation(["\0", "x", "0", "0"], false, false),
+        peg$c51 = /^[:]/,
+        peg$c52 = peg$classExpectation([":"], false, false),
 
         peg$currPos          = 0,
         peg$savedPos         = 0,
@@ -1102,6 +1104,20 @@ module.exports = /*
       } else {
         s0 = peg$FAILED;
         if (peg$silentFails === 0) { peg$fail(peg$c50); }
+      }
+
+      return s0;
+    }
+
+    function peg$parsecolon() {
+      var s0;
+
+      if (peg$c51.test(input.charAt(peg$currPos))) {
+        s0 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c52); }
       }
 
       return s0;

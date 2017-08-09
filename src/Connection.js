@@ -71,7 +71,11 @@ export default class Connection extends events.EventEmitter {
               }
              );
 
-        stream.read.subscribe(null,null,e=>this.channels.forEach(c=>c.complete()));
+        stream.read
+        // .do(d=>{
+        //     this.debug>=DEBUG.DEBUG&&console.log('Connection read:',d);
+        // })
+        .subscribe(null,null,e=>this.channels.forEach(c=>c.complete()));
     }
 
     close() {
@@ -79,15 +83,25 @@ export default class Connection extends events.EventEmitter {
       this.stream.close();
     }
 
+    /*
+     * @deprecated use debug(level)
+     */
     setDebug(d) {
       this.debug=d;
       return this;
     }
 
+    debug(...args) {
+      if (args.length) 
+        this.debug=args[0];
+      else return this.debug;
+      return this;
+    }
+
     /** If all channels are closed, close this connection */
-    closeOnDone(b) {
-      if (b) 
-        this.closeOnDone=b;
+    closeOnDone(...args) {
+      if (args.length) 
+        this.closeOnDone=!!args[0];
       else return this.closeOnDone;
       return this;
     }
@@ -105,14 +119,15 @@ export default class Connection extends events.EventEmitter {
             if (this.channels.some(c=>c.getId()===id)) throw('Channel already exists for ID '+id);
         }
         this.debug>=DEBUG.SILLY&&console.log("Creating proxy stream");
+        const matchId=RegExp("^"+id+"-");
         let s = {
           "read": this.stream.read
-                      .filter(e=>e.tag==id),
-          "write": (d,args) => {
+                      .filter(e=>matchId.test(e.tag)),
+          "write": (d,args,cmdTrack=0) => {
               if (typeof(d)===STRING_TYPE)
                 d=d.split("\n");
               if (Array.isArray(d)&&d.length) {
-                d.push('.tag='+id);
+                d.push(`.tag=${id}-${cmdTrack}`);
                 return this.stream.write(d,args);
               }
               else return;
@@ -127,12 +142,13 @@ export default class Connection extends events.EventEmitter {
                 this.debug>=DEBUG.WARN&&console.log("Could not find channel %s when trying to close",id);
           },
           "done": ()=>{
-              this.debug>=DEBUG.DEBUG&&console.log("Channel done (%s)",id);
               // If Connection closeOnDone, then check if all channels are done.
               if (this.closeOnDone) {
-                  const cl=this.channels.filter(c=>c.status&(Channel.OPEN|Channel.RUNNING));
+                  const cl=this.channels.filter(c=>c.status&(CHANNEL.OPEN|CHANNEL.RUNNING));
+                  console.log("Channel done (%s)",cl);
                   if (cl.length) return false;
-                  this.channels.filter(c=>c.status&(Channel.DONE)).forEach(c=>console.log("Closing...",c));
+                  this.debug>=DEBUG.DEBUG&&console.log("Channel done (%s)",id);
+                  this.channels.filter(c=>c.status&(CHANNEL.DONE)).forEach(c=>console.log("Closing...",c));
                   return true;
               }
               return false;
@@ -141,6 +157,7 @@ export default class Connection extends events.EventEmitter {
         var c;
         this.debug>=DEBUG.INFO&&console.log("Creating channel ",id);
         this.channels.push((c=new Channel(id,s,this.debug,closeOnDone)));
+        this.debug>=DEBUG.INFO&&console.log("Channel %s Created",id);
         return  c;
     }
 }
