@@ -62,7 +62,7 @@ export default class Connection extends events.EventEmitter {
         login.filter(d=>d.type===EVENT.DONE)
              .subscribe(d=>{
                 this.status=CONNECTION.CONNECTED;
-                this.debug>=DEBUG.INFO&&console.log('Connected');
+                this.debug>=DEBUG.INFO&&console.log('Login complete: Connected');
                 p.resolve(this);
               },
               rejectAndClose,
@@ -72,10 +72,7 @@ export default class Connection extends events.EventEmitter {
              );
 
         stream.read
-        // .do(d=>{
-        //     this.debug>=DEBUG.DEBUG&&console.log('Connection read:',d);
-        // })
-        .subscribe(null,null,e=>this.channels.forEach(c=>c.complete()));
+        .subscribe(null,null,e=>this.channels.forEach(c=>c.close(true)));
     }
 
     close() {
@@ -110,8 +107,11 @@ export default class Connection extends events.EventEmitter {
       return this.channels.filter(c=>c.getId()==id)[0];
     }
 
+    get connected() {
+      return !!(this.status&(CONNECTION.CONNECTED|CONNECTION.WAITING));
+    }
     @autobind
-    openChannel(id,closeOnDone=false) {
+    openChannel(id,closeOnDone) {
         this.debug>=DEBUG.SILLY&&console.log("Connection::OpenChannel");
         if (!id) {
             id=+(new Date());
@@ -137,7 +137,7 @@ export default class Connection extends events.EventEmitter {
               if (channel) {
                 this.debug>=DEBUG.DEBUG&&console.log("Closing channel ",id);
                 this.channels.splice(this.channels.indexOf(channel),1);
-                if (this.channels.length==0 && this.closeOnDone) this.close(); 
+                if (this.channels.filter(c=>c.status&(CHANNEL.OPEN|CHANNEL.RUNNING)).length===0 && this.closeOnDone) this.close(); 
               } else
                 this.debug>=DEBUG.WARN&&console.log("Could not find channel %s when trying to close",id);
           },

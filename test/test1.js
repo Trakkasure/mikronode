@@ -1,23 +1,25 @@
-// require('babel-register');
-
-var MikroNode = require('./dist/mikronode.js');
-var api = new MikroNode('127.0.0.1');
-//api.setDebug(MikroNode.DEBUG);
-api.connect('username','password').then(
-	function(conn) { 
+var MikroNode = require('../src');
+var device = new MikroNode('10.10.10.10');
+// device.setDebug(MikroNode.DEBUG);
+device.connect('admin','password').then(conn=>{ 
+	try {
 		console.log("Connected");
-		var channel1=conn.openChannel("address_export");
-		// var channel2=conn.openChannel();
 		conn.closeOnDone(true);
-		channel1.write('/ip/export');
-		//channel2.write('/user/active/listen');
+		var channel=conn.openChannel("address_export");
+		channel.closeOnDone(true);
 
-		channel1.stream.subscribe(e=>console.log("Data 1: ",e));
-		//channel2.data.subscribe(e=>console.log("Data 2: ",e));
+		console.log("Writing command...");
+		const p=channel.write('/ip/address/print');
 
-		//setTimeout(function(){channel2.write('/cancel')},3000);
+		p.then(()=>console.log("Command Written"));
+		p.done.then(data=>console.log("Data received in promise: ",data));
+
+		channel.data.subscribe(e=>console.log("Data Sub: ",e.data));
+		channel.done.subscribe(data=>console.log("Done Sub:",data));
+
+	} catch (e) {
+		console.log("Error while running ",e);
 	}
-  , function(err) {
-  		console.log("Error occured while connecting ",err);
-    }
-);
+},err=>{
+  	console.log("Error occured while connecting ",err);
+});
