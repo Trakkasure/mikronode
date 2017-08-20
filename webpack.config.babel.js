@@ -1,7 +1,9 @@
 var webpack = require("webpack");
 
 module.exports = {
-    entry: {mikronode:'./src/index.js'},
+    entry: {
+      mikronode:['./src/index.js']
+    },
     target: 'node',
     module: {
       loaders: [
