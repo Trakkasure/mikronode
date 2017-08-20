@@ -2,13 +2,14 @@ import util from 'util';
 import events from 'events';
 import {Observable, Subject, Scheduler} from 'rxjs';
 import {DEBUG, CONNECTION, CHANNEL, EVENT} from './constants.js';
-import {resultsToObj} from './Util.js';
+import {resultsToObj,getUnwrappedPromise} from './Util.js';
 // console.log2=console.log;
 // console.log=function(...args) {
 //     const stack=new Error().stack.split('\n');
 //     const file = (stack[2].match(/\(([^:]+:\d+)/)||['',''])[1].split("/").pop()+": "+typeof args[0]==="string"?args.shift():'';
 //     console.log2(file,...args);
 // }
+
 export default class Channel extends events.EventEmitter {
 
     /** ID of the channel. 
@@ -56,14 +57,14 @@ export default class Channel extends events.EventEmitter {
     @Private
     debug=DEBUG.NONE;
 
-    /** If wether to call close on this channel when done event occurs. This only works if sync is true.
+    /** If whether to call close on this channel when done event occurs, and there are no commands in the queue to run.
      * @private
      * @instance
      * @member {boolean} closeOnDone
      * @memberof Channel
     **/
     @Private
-    closeOnDone=false;
+    closeOnDone=true;
 
     /** If wether to call close on this channel when trap event occurs.
      * @private
@@ -142,236 +143,278 @@ export default class Channel extends events.EventEmitter {
      * @instance
      * @member {Array} buffer
      * @memberof Channel
-    **/
+     */
     @Private
     buffer = [];
+
+    @Private
+    cmdCount = 0;
 
     /**
       * Command ID tracking.
       * @private
       * @instance
-      * @member {Object} buffer
+      * @member {Object}
       * @memberof Channel
-    **/
+      */
     @Private
-    cmd = {count:0}
+    cmd = {};
+
+    @Private
+    done;
     /** 
       * Create new channel on a connection. This should not be called manually. Use Connection.openChannel
       * @constructor
-      * @param {string|number} id - ID of the channel
-      * @param {object} stream - stream object representing link to connection.
-
-    **/
+      * @param {string|number} id ID of the channel
+      * @param {object} stream stream object representing link to connection.
+      * @param {number} debug The debug level.
+      * @param {boolean} closeOnDone If the channel should close itself when the next done event occurs, and there are no more commands to run.
+      */
     constructor(id,stream,debug,closeOnDone) {
         super();
         this.debug=debug;
         this.debug&DEBUG.SILLY&&console.log('Channel::New',[].slice.call(arguments));
-        this.closeOnDone=closeOnDone;
+        this.closeOnDone=(typeof closeOnDone===typeof true)?closeOnDone:this.closeOnDone;
+        this.id=id; // hold a copy.
+
         if(this.status&(CHANNEL.CLOSING|CHANNEL.CLOSED)) return; // catch bad status
-        const done=new Subject();
-        const index=done
-            .do(e=>{
-                if (!e.cmd) return;
-                delete this.cmd[e.id].p;
-                delete this.cmd[e.id];
-            })
-            .subscribeOn(Scheduler.async)
-            .scan((idx,i)=>++idx,0)
-            .share(); // share the index result.
 
-        this.stream=stream;
-        this.id=id;
-        this.read=stream.read.takeWhile(()=>!(this.status&CHANNEL.CLOSED))
-            .flatMap(d=>{
-                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::Read flatMap',d);
-                const pos=d.tag.split('-');
-                const cmd=pos.pop();
-                return Observable.of({...d,tag:pos.join('-'),cmd:this.cmd[cmd]});
-            }).share()
-            // .do(d=>{
-            //     this.debug>=DEBUG.SILLY&&console.log('Channel (%s)::Event (%s)',id,e.type,e);
-            // })
-            // .share()
-            ;
+        this.stream = stream; // Hold a copy
+        // Stream for reading everything.
+        this.read = stream.read.takeWhile(data=>!(this.status&CHANNEL.CLOSED))
+            .do(e=>this.debug>=DEBUG.SILLY&&console.log('Channel (%s)::%s Sentence on channel ',e.tag))
+            .flatMap(data=>{
+                const cmd=this.getCommandId(data);
+                return Observable.of({...data,tag:data.tag.substring(0,data.tag.lastIndexOf('-')),cmd:(this.getCommand(cmd)||{cmd:null}).cmd});
+            }).share();
+        // Stream for sentences with data.
+        this.data = this.createStream(this.read,[EVENT.DATA,EVENT.DONE_RET]).share();
+        // Stream for signaling when done.
+        this.done = this.createStream(this.read,[EVENT.DONE,EVENT.DONE_RET,EVENT.DONE_TAG]).share();
 
-        this.data=new Subject();
-        this.read
-            .filter(e=>e.type===EVENT.DATA||e.type===EVENT.DONE_RET)
-            // .do(e=>this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::DATA ',id,e))
-            .subscribe(d=>{
-                this.emit(EVENT.DATA,d.data);
-                this.data.next(d);
-                this.dataBuffer[d.cmd.id].push(d.data);
-            })
-            // .catch((...e)=>{
-            //     console.error("Error in data read filter.",e);
-            // })
-            ;
-
-        const doNext=(e)=>{
-            const commandId=e.cmd?e.cmd.id:0;
-            this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::doNext Resolving Done promise',id);
-            if (commandId) delete this.dataBuffer[commandId];
-            if (!this.buffer.length) {
-                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::Triggering Done',id);
-                this.status=CHANNEL.DONE;
-                if (this.sync&&this.closeOnDone) {
-                    this.status=CHANNEL.CLOSING;
-                    bufferedStreamSubject.complete();
-                    this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::CLOSING',id);
-                }
-            }
-            done.next(e);
-        };
-        this.read.filter(e=>e.type==EVENT.DONE_TAG||e.type==EVENT.DONE||e.type==EVENT.DONE_RET)
-            .subscribe(e=>{
-                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::DONE Resolving Done promise',id);
-                if (!e.cmd) {
-                    return doNext(e);
-                }
-                const promise=e.cmd.p;
-                const commandId = e.cmd.id;
-                promise[2].then(doNext).catch(e=>{
-                    console.log("Error in doNext",e);
-                    this.status=CHANNEL.DONE;
-                    if (this.sync&&this.closeOnDone) {
-                        this.status=CHANNEL.CLOSING;
-                        this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::CLOSING',id);
-                        bufferedStreamSubject.complete();
-                        done.complete();
-                    }
-                    done.next(e);
-                });
-                // if (!(this.status&CHANNEL.CLOSING)) {
-                const data={...e,cmd:e.cmd.cmd,data:(e.data||[]).concat(this.dataBuffer[commandId]),id:e.cmd.id};
-                bufferedStreamSubject.next(data);
-                promise[0](data);
-                // }
-            },e=>{
-                console.error("Error in done read filter."+e);
-            },e=>{
-                bufferedStreamSubject.complete();
-            });
-        this.trap=this.read.filter(e=>e.type==EVENT.TRAP||e.type===EVENT.TRAP_TAG).share();
-        this.trap.subscribe(e=>{
-                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::TRAP Rejecting Done promise',id);
-                if (this.closeOnTrap||this.status&CHANNEL.CLOSING&&!this.buffer.length) {
-                    this.status=CHANNEL.CLOSING;
-                    this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSING',id);
-                    done.complete();
-                    bufferedStreamSubject.complete();
-                    this.close();
-                }
-                // e.cmd.p[2].catch(e=>done.next("go")); // execute next after catch completes. // done happens after catch.
-                // done.next("go");
-                e.cmd.p[1](resultsToObj(e).message); 
-            },(...e)=>{
-                console.error("Error in trap read filter.",e);
-            });
+        // Stream for all traps from device.
+        this.trap=this.read.filter(e=>e.type==EVENT.TRAP||e.type===EVENT.TRAP_TAG)
+        .do(e=>this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::TRAP ',id))
+        .share();
+        // this.trap.subscribe(e=>{
+            // if (this.closeOnTrap||this.status&CHANNEL.CLOSING) {
+            //     this.status=CHANNEL.CLOSING;
+            //     this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSING',id);
+            //     this.close();
+            // }
+        // });
         this.read.filter(e=>e.type==EVENT.FATAL)
             .subscribe(e=>{
-                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::FAIL Rejecting Done promise',id);
-                e.cmd.p[2].catch(()=>done.next(e)); // execute next after catch completes.
-                e.cmd.p[1](resultsToObj(e));
-                this.status=CHANNEL.CLOSED;
-                this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSING',id);
-                done.next(e);
-                done.complete();
+                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::FATAL ',id);
+                this.status=CHANNEL.CLOSING;
                 this.close();
-            },(...e)=>{
-                console.error("Error in fatal read filter.",e);
             });
-
-        const bufferedStreamSubject=new Subject();
-
-        this.bufferedStream=bufferedStreamSubject.share();
-
-        // const bufferedStream=this.data
-        //     .buffer(index)
-        //     // .do(e=>{
-        //     //     this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::BUFFERED (%s)',id,e.type,e);
-        //     // })
-        //     .map(d=>({id:id,tag:d[0]?d[0]["tag"]:id,cmd:d[0]?d[0]["cmd"]:null,type:EVENT.DONE,data:d.map(d=>d.data)}))
-        //     .share();
-        
-        // bufferedStream
-        //     .subscribe(buffer=>{
-        //         this.debug>=DEBUG.INFO&&console.log('Channel(%s)::DONE',id);
-        //         this.emit(EVENT.DONE,buffer);
-        //         // Check command buffer, if it has items, flush them.
-        //         if (this.buffer.length==0&&((this.status&CHANNEL.CLOSING)||(this.sync&&this.closeOnDone)||this.stream.done())) {
-        //             this.debug>=DEBUG.SILLY&&console.log("Channel (%s) closing",id);
-        //             this.close();
-        //         }
-        //     },e=>{
-        //         console.error("Error in buffered data read filter.",e);
-        //     },()=>bufferedStreamSubject.complete());
-
-        index.flatMapTo(Observable.using(
-                ()=>this.buffer
-              , (r)=>{
-                    if (this.sync) {
-                        if (this.buffer.length) {
-                            this.debug>=DEBUG.INFO&&console.log("Channel %s: Pulling next item from write buffer ",this.id,this.buffer[0]);
-                            return Observable.of(this.buffer.shift());
-                        } else {
-                            const t=this.write.take(1);
-                            this.debug>=DEBUG.INFO&&console.log("Channel %s: Pulling next item from write stream ",this.id,t);
-                            return t;
-                        }
-                    } else {
-                        // this.debug>=DEBUG.INFO&&console.log("Channel %s: Returning whole write stream ",this.id,this.write);
-                        // return this.write;
-                    }
-                }
-            )
-        )
-        .subscribe(([d,args,cmdCount])=>{
-            this.status=CHANNEL.RUNNING;
-            this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
-            this.dataBuffer[cmdCount]=[];
-            this.stream.write(d,args,cmdCount);
-            return this;
-        });
-
-        this.write.subscribe(([d,args,cmdCount])=>{
-            if (this.status&CHANNEL.RUNNING && this.sync) {
-                this.debug>=DEBUG.INFO&&console.log("Buffering write on channel %s",this.id,d,args);
-                this.buffer.push([d,args,cmdCount]);
-            } else {
-                this.dataBuffer[cmdCount]=[];
-                this.status=CHANNEL.RUNNING;
-                this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,d,args);
-                this.stream.write(d,args,cmdCount);
-            }
-        });
+        this.bufferedStream=new Subject();
     }
 
-    write(d,args) {
+    /**
+     * 
+     * @param {string} command The command to write to the device on this channel.
+     * @param {*} args Arguments to pass as part of the command.
+     */
+    write(command,args=[]) {
         if (this.status&(CHANNEL.CLOSED|CHANNEL.CLOSING)) {
             this.debug>=DEBUG.WARN&&console.error("Cannot write on closed or closing channel");
             return this;
         }
-        const p = new Promise((res,rej)=>{
-            this.cmd[++this.cmd.count]={cmd:[d,args],p:[res.bind(this),rej.bind(this)]};
+        const {promise,resolve,reject}=getUnwrappedPromise();
+
+        promise.resolve=resolve;
+        promise.reject=reject;
+        // Add the command to the registry.
+        const cmd=this.registerCommand(command,args,promise);
+        const commandId=cmd.id;
+        promise.cmd=cmd;
+
+        if ((Object.keys(this.cmd).length-1)==0 && !(this.sync&&this.status&CHANNEL.RUNNING)) {
+                // console.log("There are no commands in the buffer, but channel is in running state while sync enabled.");
+            this.status=CHANNEL.RUNNING;
+            this.debug>=DEBUG.INFO&&console.log("Writing on channel %s",this.id,command,args);
+            this.stream.write(command,args,commandId);
+        } else {
+            const last=this.lastCommand(commandId);
+            // If we are in sync mode, wait until the command is complete
+            if (this.sync) last.promise.then(()=>{
+                this.status=CHANNEL.RUNNING;
+                this.stream.write(command,args,commandId);
+            },()=>{
+                if (this.closeOnTrap) {
+                    this.status=CHANNEL.CLOSING;
+                    return;
+                }
+                if (this.status&CHANNEL.CLOSING) return;
+                this.status=CHANNEL.RUNNING;
+                this.stream.write(command,args,commandId);
+            });
+            // Otherwise since the last command was sent, we can send this one now.
+            else {
+                this.status=CHANNEL.RUNNING;
+                this.stream.write(command,args,commandId);
+            }
+        }
+
+        promise.then((e)=>{
+            // If we want to close on done, and there are no commands waiting to run
+            this.status=CHANNEL.DONE;
+            if (!Object.keys(this.cmd).length) {
+                if (this.closeOnDone) this.close();
+            }
         });
-        const commandId=this.cmd.count;
-        p.catch(e=>{
-            // console.log("**** Caught error in promise, clearing CMD");
-            this.debug>=DEBUG.WARN&&console.log("Catching error: ",this.cmd.count);
-            delete this.cmd[commandId];
+        // Collapsing on error...
+        promise.catch(e=>{
+            this.status=CHANNEL.DONE;
+            if (this.closeOnTrap) {
+                this.status=CHANNEL.CLOSING;
+                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s):: read-done catch CLOSING',this.id);
+            }
         });
-        this.cmd[commandId].p.push(p);
-        this.cmd[commandId].id=commandId;
-        this.write.next([d,args,commandId]);
-        return p;
+        return promise;
+    }
+
+    /**
+     * Clear the command from cache
+     * @param {number} commandId 
+     */
+    @Private
+    clearCommand(commandId) {
+        if (typeof commandId === typeof {}) {
+            if (commandId.cmd)
+                return this.clearCommand(commandId.cmd.id);
+            if (commandId.id)
+                return this.clearCommand(commandId.id);
+            return null;
+        }
+        const cmd = this.cmd[commandId];
+        if (!cmd) return;
+        delete cmd.promise.resolve;
+        delete cmd.promise.reject;
+        delete cmd.promise;
+        delete this.cmd[commandId];
+    }
+    /**
+     * Get the last command relative to the commandId
+     * @param {number} commandId 
+     */
+    @Private
+    lastCommand(commandId) {
+        return this.cmd[commandId-1];
+    }
+
+    @Private
+    getCommand(commandId) {
+        if (!commandId) return null;
+        if (typeof commandId===typeof {}) {
+            if (commandId.cmd) return commandId.cmd;
+            else return null;
+        }
+        return this.cmd[commandId];
+    }
+
+    /**
+     * 
+     * @param {string} command Command to send to device
+     * @param {array} args Arguments for command
+     * @param {object} promise object containing resolve and reject functions.
+     */
+    @Private
+    registerCommand(command,args,promise) {
+        this.cmdCount=this.cmdCount+1;
+        const commandId=this.cmdCount;
+        this.cmd[commandId]={id:commandId,cmd:{id:commandId,command,args},promise};
+        (function(id,p){
+            const race = Observable.race(
+                this.done
+                    .filter(
+                        data=>data.cmd&&data.cmd.id===id
+                    )
+                    // .do(
+                    //     d=>console.log("*** Done in %s:%s",d.cmd.id,id)
+                    // )
+                    .take(1)
+              , this.trap
+                    .filter(
+                        data=>data.cmd&&data.cmd.id===id
+                    )
+                    // .do(
+                    //     d=>console.log("*** Trap in %s:%s",d.cmd.id,id)
+                    // )
+                    .take(1)
+            ).take(1);
+
+            race.partition(data=>data.type==EVENT.TRAP||data.type===EVENT.TRAP_TAG)
+            .reduce((r,o,i)=>{
+                if (i==0) {
+                    o.subscribe(error=>{
+                        this.debug>=DEBUG.SILLY&&console.error("*** Register Command: trap",id,error);
+                        p.reject(error);
+                    });
+                } else
+                return o;
+            },{})
+
+            const data=this.data
+                .filter(data=>data.cmd.id===id)
+                .takeUntil(race)
+                .do(d=>this.debug>=DEBUG.SILLY&&console.log("*** Data in %s:%s",d.cmd.id,id))
+                .reduce((acc,d)=>{
+                    if (d.data) acc.data=acc.data.concat([d.data]);
+                    return acc;
+                },{cmd:this.cmd[id].cmd,tag:this.id,data:[]})
+                .do(d=>this.debug>=DEBUG.SILLY&&console.log("*** Reduced Data in ",d))
+                .takeUntil(race.filter(data=>data.type==EVENT.TRAP||data.type===EVENT.TRAP_TAG))
+                .subscribe(data=>{
+                    this.debug>=DEBUG.SILLY&&console.log("*** Register Command: subscribe",id,data);
+                    this.status=CHANNEL.DONE;
+                    this.bufferedStream.next(data);
+                    p.resolve(data);
+                },
+                error=>{
+                    this.debug>=DEBUG.SILLY&&console.error("*** Register Command: error",id,error);
+                },
+                ()=>{
+                    this.debug>=DEBUG.SILLY&&console.log("*** Register Command: complete");
+                    this.clearCommand(id);
+                });
+        }.bind(this))(commandId,promise);
+        return this.cmd[commandId].cmd;
+    }
+
+    /**
+     * Create a stream filtered by list of event types.
+     * @param {Observable} stream The stream representing the incoming data
+     * @param {Array} events list of events to filter by
+     * @return {Observable} The incoming stream filtered to only the packets having data.
+     */
+    createStream(stream,events) {
+        return this.read
+                   .filter(e=>events.indexOf(e.type)!=-1)
+                   .do(e=>this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::%s flatMap',e.tag,e.type))
+                   .flatMap(d=>{
+                       return Observable.of(d);
+                       // this.dataBuffer[d.cmd.id].push(d.data);
+                   });
+    }
+    /**
+     * 
+     * @param {Object} data Sentence object from read stream
+     * @return {String} Command ID of sentence.
+     */
+    getCommandId(data) {
+        if (!data) return null;
+        if (typeof data === typeof {})
+            return this.getCommandId(data.tag);
+        return data.substring(data.lastIndexOf('-')+1);
     }
 
     // status() { return this.status }
     close(force) { 
         if (this.status&CHANNEL.RUNNING) {
             if (force) this.stream.write('/cancel');
-            // else this.write('/cancel');
             this.closeOnDone=true;
             this.sync=true;
             this.status=CHANNEL.CLOSING;
@@ -380,12 +423,12 @@ export default class Channel extends events.EventEmitter {
         if (this.status&CHANNEL.CLOSED) return;
         this.status=CHANNEL.CLOSED;
         this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSED',this.id);
+        this.bufferedStream.complete();
         this.stream.close();
         this.removeAllListeners(EVENT.DONE);
         this.removeAllListeners(EVENT.DATA);
         this.removeAllListeners(EVENT.TRAP);
     }
-    // Enforce read-only
 
     /** Data stream returns each sentence from the device as it is received. **/
     get data() {
@@ -393,7 +436,7 @@ export default class Channel extends events.EventEmitter {
     }
 
     /** Done stream buffers every sentence and returns all sentences at once.
-        Don't use this stream when "listen"ing to data. done never comes.
+        Don't use this stream when "listen"ing to data. Done never comes on a watch/listen command.
         A trap signals the end of the data of a listen command.
      **/
     get done() {
@@ -411,11 +454,19 @@ export default class Channel extends events.EventEmitter {
         return this.read;
     }
 
+    /**
+     * Get the current status of this channel.
+     * @return The status code
+     */
     get status() {
         return this.status;
     }
 
-    /* Commands are sent to the device in a synchronous manor. This is enabled by default. */
+    /**
+     * Commands are sent to the device in a synchronous manor. This is enabled by default.
+     * @param {sync} sync If passed, this sets the value of sync.
+     * @return If sync parameter is not passed, the value of sync is returned. Otherwise this channel object is returned.
+     */
     sync(...args) {
         if (args.length) {
             this.sync=!!args[0];
@@ -424,23 +475,81 @@ export default class Channel extends events.EventEmitter {
         return this.sync;
     }
 
-    pipeFrom(stream$) {
+    /**
+     * 
+     * @param {Observable} stream Take incoming commands to write to this channel from the provided stream. The channel will stop taking commands if a fatal error occurs, or if the channel is closing or closed.
+     * 
+     */
+    pipeFrom(stream) {
         if (this.status&(CHANNEL.DONE|CHANNEL.OPEN)) {
             this.status=CHANNEL.RUNNING;
-            stream$.subscribe(
+            stream.takeWhile(o=>!(this.status&(CHANNEL.FATAL|CHANNEL.CLOSING|CHANNEL.CLOSED))).subscribe(
                 d=>this.write(d),
                 ()=>{
                     this.status=CHANNEL.DONE;
-                    this.stream.done();
+                    this.stream.close();
                 },
                 ()=>{
                     this.status=CHANNEL.DONE;
-                    this.stream.done();
+                    this.stream.close();
                 }
             );
         }
     }
+
     getId(){return this.id}
+
+    on(event,func) {
+        const ret=super.on(event,func);
+        setupEventSubscription(event,getStreamByEventType(event));
+        return ret;
+    }
+
+    addEventListener(event,func) {
+        const ret=super.addEventListener(event,func);
+        setupEventSubscription(event,getStreamByEventType(event));
+        return ret;
+    }
+
+    once(event,func) {
+        const ret=super.once(event,func);
+        setupEventSubscription(event,getStreamByEventType(event));
+        return ret;
+    }
+
+    /**
+     * @param {String} event The event name to map to an observable stream.
+     * @return Observable stream.
+     */
+    @Private
+    getStreamByEventType(event) {
+        switch(event) {
+            case EVENT.DONE:
+                return this.bufferedStream;
+            case EVENT.TRAP:
+                return this.trap;
+            case EVENT.FATAL:
+                return this.fatal;
+            default:
+                return this.read;
+        }
+    }
+
+    /**
+     * @param {String} event The name of the event to setup for emitting.
+     * @param {Observable} stream The stream to listen for events.
+     * @return {Observable} Stream that will send out a copy of its input as long as there are event callbacks for the event requested.
+     */
+    @Private
+    setupEventSubscription(event,stream) {
+        if (this.listeners(event)) return;
+        // take from the stream until there are no more event listeners for that event.
+        const listenerStream = stream.takeWhile(o=>!this.listeners(event));
+        listenerStream.subscribe(e=>{
+            this.emit(event,e);
+        });
+        return listenerStream;
+    }
 
     /** When the done sentence arrives, close the channel. This only works in synchronous mode. **/
     closeOnDone(...args) { 

@@ -95,6 +95,41 @@ function hexDump(data) {
     }
 }
 
+// This is probably over done...
+// Uncomment if you want to detail trace your promises.
+function nullfunc(){}
+function getUnwrappedPromise() {
+    let resolve,reject;
+    const promise = new Promise((res,rej)=>{
+        resolve=res;
+        reject=rej;
+    });
+    return {
+        get promise() {
+            return promise;
+        }
+      , resolve:function(...args) {
+          if (resolve===nullfunc) return;
+        //   const e = new Error();
+        //   console.log("Resolving promise",promise);
+        //   console.log(e.stack.split('\n').slice(2).join('\n'))
+          reject=nullfunc;
+          const r=resolve(...args);
+          resolve=nullfunc;return r;
+        }
+      , reject:function(...args) {
+          if (reject===nullfunc) return;
+        //   const e = new Error();
+        //   console.log("Rejecting promise",promise);
+        //   console.log(e.stack.split('\n').slice(2).join('\n'))
+          resolve=nullfunc;
+          const r=reject(...args);
+          reject=nullfunc;
+          return r;
+        }
+    };
+}
+
 function objToAPIParams(obj,type) {
     const prefix=type==='print'?'?':'=';
     return Object.keys(obj).map(k=>obj[k]?`${prefix}${k}=${obj[k]}`:`${prefix}${k}`);
@@ -109,4 +144,4 @@ function resultsToObj(r) {
     if (!Array.isArray(r)) return {};
     return r.reduce((p,f)=>{p[f.field]=f.value;return p},{});
 }
-export {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj};
+export {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj,getUnwrappedPromise};
