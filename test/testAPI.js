@@ -4,8 +4,8 @@ var api=require('../dist/mikronode.js');
 var device=new api(/* Host */'127.0.0.1' /*, Port */ /*, Timeout */);
 // device.setDebug(api.DEBUG);
 
-// connect: user, password.
-device.connect('usrename','password').then(function(conn) {
+// connect:
+device.connect().then(([login])=>login('usrename','password')).then(function(conn) {
     var c1=conn.openChannel();
     console.log('Getting Packages');
     c1.write('/system/package/getall');

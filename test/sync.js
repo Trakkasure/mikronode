@@ -1,8 +1,8 @@
-var MikroNode = require('../src');
+var MikroNode = require('../dist/mikronode.js');
 var device = new MikroNode('10.10.10.10');
 // device.setDebug(MikroNode.DEBUG);
 
-device.connect('admin', 'password').then(function (conn) {
+device.connect().then(([login])=>login('admin', 'password').then(function (conn) {
     console.log("Connected");
     // When all channels are complete close the connection.
     conn.closeOnDone(true); 

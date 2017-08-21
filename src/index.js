@@ -1,19 +1,21 @@
 import util from 'util';
 import net from 'net';
+import TLS from 'tls';
 import Promise from 'promise';
 import {Subject, Observable} from 'rxjs';
 import {autobind} from 'core-decorators';
 import crypto from 'crypto';
+import dns from 'dns';
 
-import {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj} from './Util.js';
+import {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj, getUnwrappedPromise} from './Util.js';
 import {STRING_TYPE, DEBUG, CONNECTION,CHANNEL,EVENT} from './constants.js';
 import parser from './parser.js';
 
 import Connection from './Connection';
 
 const Socket=net.Socket;
+
 const nullString=String.fromCharCode(0);
-const emptyFunction=()=>{};
 
 class MikroNode {
 
@@ -39,6 +41,15 @@ class MikroNode {
 
     @Private
     status=CONNECTION.DISCONNECTED;
+
+    @Private
+    tls=null;
+
+    @Private
+    socketOpts={};
+
+    @Private
+    socketProto='tcp4';
 /**
  * Creates a MikroNode API object.
  * @exports mikronode
@@ -108,15 +119,22 @@ class MikroNode {
         this.port=port;
     }
 
-    /** set tls options for this connection */
-    setTLS(options) {
-        if (options) {
-            this.tls=options
+    /** get/set tls options for this connection */
+    TLS(opts={}) {
+        if (opts) {
+            this.tls=opts;
+            if (opts.host) this.host=opts.host;
+            if (opts.port) this.port=opts.port;
             return this;
         }
         return this.tls;
     }
 
+    set socketOpts(opts) {
+        this.socketOpts=opts;
+        if (opts.host) this.host=opts.host;
+        if (opts.port) this.port=opts.port;
+    }
     /** Set timeout for socket connecion */
     setTimeout(timeout) {
         this.timeout=timeout;
@@ -124,37 +142,75 @@ class MikroNode {
     }
 
     /** Connect to remote server using ID and password */
-    connect(user,password) {
+    connect(arg1,arg2) {
         this.debug>=DEBUG.INFO&&console.log('Connecting to '+this.host);
 
+        let cb;
         this.debug>=DEBUG.SILLY&&console.log('Creating socket');
-        this.sock = new SocketStream(this.timeout,this.debug);
+        this.sock = new SocketStream(this.timeout,this.debug,this.tls?typeof this.tls===typeof {}?this.tls:{}:false);
         const stream=this.sock.getStream();
 
-        const login=challenge=>{
-            const md5=crypto.createHash('md5');
-            md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
-            stream.write([
-                "/login",
-                "=name="+user,
-                "=response=00"+md5.digest("hex")
-            ]);
-        };
+        if (typeof arg1===typeof {}) {
+            this.socketOpts={...this.socketOpts,arg1};
+            if (typeof arg1===typeof function(){})
+                cb=arg2;
+        } else if (typeof arg1===typeof function(){}) cb=arg1;
 
         const close=()=>this.sock.getStream().sentence.complete();
+
+        const login=(user,password,cb)=>{
+            this.debug>=DEBUG.DEBUG&&console.log('Logging in');
+            stream.write('/login');
+            const {promise,resolve,reject}=getUnwrappedPromise();
+            // Create a connection handler
+            this.connection=new Connection(
+                {...stream,close},
+                challenge=>{
+                    const md5=crypto.createHash('md5');
+                    md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
+                    stream.write([
+                        "/login",
+                        "=name="+user,
+                        "=response=00"+md5.digest("hex")
+                    ]);
+                },{resolve,reject}
+            );
+            this.connection.setDebug(this.debug);
+            promise.then(()=>{
+                if (cb) cb(null,this.connection);
+            },err=>{
+                if (cb) cb(err,null);
+            });
+            return promise;
+        };
+
         this.debug>=DEBUG.SILLY&&console.log('Creating promise for socket connect');
         const promise = new Promise((resolve,reject) => {
-            const connected = () => {
-                // Create a connection handler
-                this.debug>=DEBUG.DEBUG&&console.log('Logging in');
-                stream.write('/login');
-                this.connection=new Connection({...stream,close},login,{resolve,reject});
-                this.connection.setDebug(this.debug);
-                /* Initiate Login */
-            };
-            this.debug>=DEBUG.SILLY&&console.log('Connecting to remote host');
-            this.sock.connect(this.host,this.port,connected);
-            this.sock.getStream().sentence.subscribe(null,reject,null); // reject promise on error.
+            this.debug>=DEBUG.SILLY&&console.log('Connecting to remote host. Detected %s',net.isIPv6(this.host)?'ipv6':net.isIPv4(this.host)?'ipv4':'DNS lookup');
+            const fn=((net.isIPv4(this.host)||net.isIPv6(this.host))?((this.socketOpts.family=net.isIPv6(this.host)?6:4),(a,b)=>b(null,[a])):((this.socketOpts.family==6)?dns.resolve4:dns.resolve6));
+            fn(this.host,(err,data)=>{
+                if (err) {
+                    return reject("Host resolve error: ",err);
+                }
+                // this.debug>=DEBUG.DEBUG&&console.log('Socket connect: ',{...this.socketOpts,...this.tls,host:this.host,port:this.port});
+                this.sock.connect({
+                    ...this.socketOpts,
+                    ...this.tls,
+                    host:data[0],
+                    port:this.port
+                }).then(([socketOpts,...args])=>{
+                    this.debug>=DEBUG.DEBUG&&console.log('Connected. Waiting for login.');
+                    // initiate the login process
+                    resolve([login,socketOpts,...args]);
+                    if (cb) cb(null,login,socketOpts,...args);
+                    /* Initiate Login */
+                    this.sock.getStream().sentence.take(1).subscribe(null,reject,null);
+                }).catch(err=>{
+                    if (cb) cb(err,null);
+                    reject("Caught error in socket connect",err);
+                });
+                // reject connect promise if the socket throws an error.
+            });
         });
         // Connect to the server.
         return promise;
@@ -163,11 +219,14 @@ class MikroNode {
 
 // Object.keys(DEBUG).forEach(k=>MikroNode[k]=DEBUG[k]);
 const api=Object.assign(MikroNode,DEBUG);
-export default Object.assign(api,{CONNECTION, CHANNEL, EVENT, resultsToObj});
+export default Object.assign(api,{CONNECTION, CHANNEL, EVENT, resultsToObj, getUnwrappedPromise});
 
 /** Handles the socket connection and parsing of infcoming data. */
 /* This entire class is private (not exported) */
 class SocketStream {
+
+    @Private
+    rawSocket;
 
     @Private
     socket;
@@ -187,11 +246,13 @@ class SocketStream {
     @Private
     data$;
 
-    constructor(timeout,debug) {
+    constructor(timeout,debug,tls) {
         debug>=DEBUG.DEBUG&&console.log('SocketStream::new',[timeout,debug]);
 
         this.debug=debug;
-        this.socket = new Socket({type:'tcp4'});
+        this.rawSocket = new Socket();
+
+        this.socket=tls?new TLS.TLSSocket(this.rawSocket,tls):this.rawSocket;
 
         this.sentence$=new Subject();
         // Each raw sentence from the stream passes through this parser.
@@ -274,11 +335,14 @@ class SocketStream {
         this.setTimeout(timeout);
 
         // This is the function handler for error or complete for the parsing functions.
-        const closeSocket=(e)=>{this.debug>=DEBUG.DEBUG&&console.log("Closing Socket ",e);e?this.socket.destroy(e):this.socket.destroy();}
+        const closeSocket=(e)=>{
+            this.debug>=DEBUG.DEBUG&&console.log("Closing Socket ",e);
+            e?this.rawSocket.destroy(e):this.rawSocket.destroy();
+        }
         /** Listen for complete on stream to dictate if socket will close */
         this.sentence$
             // .do(d=>console.log("Sentence: ",d))
-            .subscribe(emptyFunction,closeSocket,closeSocket);
+            .subscribe(null,closeSocket,closeSocket);
 
         // This will be called if there is no activity to the server.
         // If this occurs before the login is successful, it could be
@@ -305,15 +369,39 @@ class SocketStream {
             }
         });
     }
+
     /** Connect the socket */
-    connect(host,port,cb) {
-        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::Connect',[host,port,cb]);
+    connect(socketOpts) {
+        this.debug>=DEBUG.DEBUG&&console.log('SocketStream::Connect %s',this.tls?"(TLS)":"",socketOpts);
         this.status=CONNECTION.CONNECTING;
-        this.host = host;
-        this.socket.connect(port,host,(...args)=>{
-            this.debug>=DEBUG.INFO&&console.log('Socket Connected');
-            this.status=CONNECTION.CONNECTED;
-            cb(...args);
+        this.host = socketOpts.host||'localhost';
+        return new Promise((res,rej)=>{
+            // Connect to the socket. This works for both TLS and non TLS sockets.
+            try {
+                this.rawSocket.connect(socketOpts,(...args)=>{
+                    this.debug>=DEBUG.INFO&&console.log('SocketStream::Connected ',args,socketOpts);
+                    this.status=CONNECTION.CONNECTED;
+                    socketOpts={
+                        ...socketOpts,
+                        localAddress:this.socket.localAddress,
+                        localPort:this.socket.localPort
+                    };
+                    if (this.socket.encrypted)
+                        res([{
+                            ...socketOpts,
+                            authorized:this.socket.authorized,
+                            authorizationError:this.socket.authorizationError,
+                            protocol: this.socket.getProtocol(),
+                            alpnProtocol:this.socket.alpnProtocol,
+                            npnProtocol:this.socket.npnProtocol,
+                            cipher: this.socket.getCipher(),
+                            cert: this.socket.getPeerCertificate(),
+                        },...args]);
+                    else res([socketOpts,...args]);
+                });
+            } catch (e) {
+                rej("Caught exception while opening socket: ",e)
+            }
         });
     }
 

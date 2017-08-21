@@ -72,11 +72,17 @@ export default class Connection extends events.EventEmitter {
              );
 
         stream.read
-        .subscribe(null,null,e=>this.channels.forEach(c=>c.close(true)));
+        .subscribe(null,null,e=>{
+          this.channels.forEach(c=>c.close(true));
+          setTimeout(()=>{
+            this.emit('close',this);
+          },50)
+        });
     }
 
     close() {
       this.debug>=DEBUG.SILLY&&console.log("Closing connection through stream");
+      this.emit('close',this);
       this.stream.close();
     }
 
@@ -108,7 +114,7 @@ export default class Connection extends events.EventEmitter {
     }
 
     get connected() {
-      return !!(this.status&(CONNECTION.CONNECTED|CONNECTION.WAITING));
+      return !!(this.status&(CONNECTION.CONNECTED|CONNECTION.WAITING|CONNECTION.CLOSING));
     }
     @autobind
     openChannel(id,closeOnDone) {
@@ -136,6 +142,7 @@ export default class Connection extends events.EventEmitter {
               var channel=this.getChannel(id);
               if (channel) {
                 this.debug>=DEBUG.DEBUG&&console.log("Closing channel ",id);
+                setTimeout(channel.emit.bind(channel,'close',channel),50);
                 this.channels.splice(this.channels.indexOf(channel),1);
                 if (this.channels.filter(c=>c.status&(CHANNEL.OPEN|CHANNEL.RUNNING)).length===0 && this.closeOnDone) this.close(); 
               } else
@@ -145,7 +152,6 @@ export default class Connection extends events.EventEmitter {
               // If Connection closeOnDone, then check if all channels are done.
               if (this.closeOnDone) {
                   const cl=this.channels.filter(c=>c.status&(CHANNEL.OPEN|CHANNEL.RUNNING));
-                  console.log("Channel done (%s)",cl);
                   if (cl.length) return false;
                   this.debug>=DEBUG.DEBUG&&console.log("Channel done (%s)",id);
                   this.channels.filter(c=>c.status&(CHANNEL.DONE)).forEach(c=>console.log("Closing...",c));

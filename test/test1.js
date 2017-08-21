@@ -1,7 +1,13 @@
-var MikroNode = require('../src');
+var MikroNode = require('../dist/mikronode.js');
 var device = new MikroNode('10.10.10.10');
 // device.setDebug(MikroNode.DEBUG);
-device.connect('admin','password').then(conn=>{ 
+// By setting TLS options, TLS connection is enabled.
+
+device.connect(/* socketOpts */).then(function([login,socketInfo,...args]){
+	// The ability to login or not depending on resolting socket info.
+	console.log("Connected: ",socketInfo);
+	return login('admin','password'); // must return result of login();
+}).then(conn=>{ 
 	try {
 		console.log("Connected");
 		conn.closeOnDone(true);
@@ -9,17 +15,18 @@ device.connect('admin','password').then(conn=>{
 		channel.closeOnDone(true);
 
 		console.log("Writing command...");
-		const p=channel.write('/ip/address/print');
+		const p=channel.write('/ip/dhcp-server/lease/listen');
 
-		p.then(()=>console.log("Command Written"));
-		p.done.then(data=>console.log("Data received in promise: ",data));
+		// Cancel the listen in 60 seconds. Should cause stuff to complete.
+		setTimeout(()=>{channel.write('/cancel')},60*1000);
+		// p.then(data=>console.log("Data received in promise: ",data));
 
 		channel.data.subscribe(e=>console.log("Data Sub: ",e.data));
-		channel.done.subscribe(data=>console.log("Done Sub:",data));
+		// channel.done.subscribe(data=>console.log("Done Sub %s:",data.cmd.command,MikroNode.resultsToObj(data.data)));
 
 	} catch (e) {
 		console.log("Error while running ",e);
 	}
 },err=>{
-  	console.log("Error occured while connecting ",err);
+  	console.log("Error occured while connecting/logging in ",err);
 });

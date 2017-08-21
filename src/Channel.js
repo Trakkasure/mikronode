@@ -187,28 +187,26 @@ export default class Channel extends events.EventEmitter {
                 const cmd=this.getCommandId(data);
                 return Observable.of({...data,tag:data.tag.substring(0,data.tag.lastIndexOf('-')),cmd:(this.getCommand(cmd)||{cmd:null}).cmd});
             }).share();
+
         // Stream for sentences with data.
         this.data = this.createStream(this.read,[EVENT.DATA,EVENT.DONE_RET]).share();
+
         // Stream for signaling when done.
         this.done = this.createStream(this.read,[EVENT.DONE,EVENT.DONE_RET,EVENT.DONE_TAG]).share();
 
         // Stream for all traps from device.
-        this.trap=this.read.filter(e=>e.type==EVENT.TRAP||e.type===EVENT.TRAP_TAG)
-        .do(e=>this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::TRAP ',id))
-        .share();
-        // this.trap.subscribe(e=>{
-            // if (this.closeOnTrap||this.status&CHANNEL.CLOSING) {
-            //     this.status=CHANNEL.CLOSING;
-            //     this.debug>=DEBUG.INFO&&console.log('Channel (%s)::CLOSING',id);
-            //     this.close();
-            // }
-        // });
+        this.trap=this.read
+            .filter(e=>e.type==EVENT.TRAP||e.type===EVENT.TRAP_TAG)
+            .do(e=>this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::TRAP ',id))
+            .share();
+
         this.read.filter(e=>e.type==EVENT.FATAL)
             .subscribe(e=>{
                 this.debug>=DEBUG.DEBUG&&console.log('Channel (%s)::FATAL ',id);
                 this.status=CHANNEL.CLOSING;
                 this.close();
             });
+
         this.bufferedStream=new Subject();
     }
 
@@ -220,7 +218,15 @@ export default class Channel extends events.EventEmitter {
     write(command,args=[]) {
         if (this.status&(CHANNEL.CLOSED|CHANNEL.CLOSING)) {
             this.debug>=DEBUG.WARN&&console.error("Cannot write on closed or closing channel");
-            return this;
+            const p = new Promise((resolve,reject)=>reject({tag:this.id,data:{message:"Cannot write on closed or closing channel"},cmd:{command,args}}));
+            // p.catch(e=>{console.error(e.data.message)});
+            return p;
+        }
+        if (command==='/cancel') {
+            Object.keys(this.cmd).forEach(id=>{
+                this.stream.write(command,args,id);
+            });
+            return Promise.resolve({tag:this.id,data:{message:"/cancel sent."}});
         }
         const {promise,resolve,reject}=getUnwrappedPromise();
 
@@ -242,13 +248,7 @@ export default class Channel extends events.EventEmitter {
             if (this.sync) last.promise.then(()=>{
                 this.status=CHANNEL.RUNNING;
                 this.stream.write(command,args,commandId);
-            },()=>{
-                if (this.closeOnTrap) {
-                    this.status=CHANNEL.CLOSING;
-                    return;
-                }
-                if (this.status&CHANNEL.CLOSING) return;
-                this.status=CHANNEL.RUNNING;
+            }).catch(()=>{
                 this.stream.write(command,args,commandId);
             });
             // Otherwise since the last command was sent, we can send this one now.
@@ -258,21 +258,6 @@ export default class Channel extends events.EventEmitter {
             }
         }
 
-        promise.then((e)=>{
-            // If we want to close on done, and there are no commands waiting to run
-            this.status=CHANNEL.DONE;
-            if (!Object.keys(this.cmd).length) {
-                if (this.closeOnDone) this.close();
-            }
-        });
-        // Collapsing on error...
-        promise.catch(e=>{
-            this.status=CHANNEL.DONE;
-            if (this.closeOnTrap) {
-                this.status=CHANNEL.CLOSING;
-                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s):: read-done catch CLOSING',this.id);
-            }
-        });
         return promise;
     }
 
@@ -289,12 +274,17 @@ export default class Channel extends events.EventEmitter {
                 return this.clearCommand(commandId.id);
             return null;
         }
+        this.debug>=DEBUG.DEBUG&&console.log("Clearing command cache for #",commandId);
         const cmd = this.cmd[commandId];
         if (!cmd) return;
+        delete cmd.promise.cmd;
         delete cmd.promise.resolve;
         delete cmd.promise.reject;
         delete cmd.promise;
         delete this.cmd[commandId];
+        if (!Object.keys(this.cmd).length) {
+            if (this.closeOnDone) this.close();
+        }
     }
     /**
      * Get the last command relative to the commandId
@@ -347,22 +337,35 @@ export default class Channel extends events.EventEmitter {
             ).take(1);
 
             race.partition(data=>data.type==EVENT.TRAP||data.type===EVENT.TRAP_TAG)
-            .reduce((r,o,i)=>{
-                if (i==0) {
-                    o.subscribe(error=>{
-                        this.debug>=DEBUG.SILLY&&console.error("*** Register Command: trap",id,error);
-                        p.reject(error);
-                    });
-                } else
-                return o;
-            },{})
+                .reduce((r,o,i)=>{
+                    if (i==0) {
+                        o.subscribe(error=>{
+                            this.debug>=DEBUG.DEBUG&&console.error("*** Register Command: trap",id,error);
+                            this.status=CHANNEL.DONE;
+                            if (this.closeOnTrap) {
+                                this.status=CHANNEL.CLOSING;
+                                this.debug>=DEBUG.DEBUG&&console.log('Channel (%s):: read-done catch CLOSING',this.id);
+                                this.close(true);
+                            }
+                            p.reject(error);
+                            this.emit('trap',error);
+                        },null,
+                        // this should happen for every command
+                        ()=>{
+                            this.debug>=DEBUG.SILLY&&console.log("*** Register Command: complete from trap", commandId);
+                        });
+                    } else
+                    return o;
+                },{})
 
-            const data=this.data
+            const isListen=command.split('/').indexOf('listen')>0;
+            const data=
+            this.data
                 .filter(data=>data.cmd.id===id)
                 .takeUntil(race)
                 .do(d=>this.debug>=DEBUG.SILLY&&console.log("*** Data in %s:%s",d.cmd.id,id))
                 .reduce((acc,d)=>{
-                    if (d.data) acc.data=acc.data.concat([d.data]);
+                    if (d.data&&!isListen) acc.data=acc.data.concat([d.data]);
                     return acc;
                 },{cmd:this.cmd[id].cmd,tag:this.id,data:[]})
                 .do(d=>this.debug>=DEBUG.SILLY&&console.log("*** Reduced Data in ",d))
@@ -372,13 +375,15 @@ export default class Channel extends events.EventEmitter {
                     this.status=CHANNEL.DONE;
                     this.bufferedStream.next(data);
                     p.resolve(data);
+                    this.emit('done',data);
                 },
                 error=>{
                     this.debug>=DEBUG.SILLY&&console.error("*** Register Command: error",id,error);
                 },
+                // this should happen for every command
                 ()=>{
-                    this.debug>=DEBUG.SILLY&&console.log("*** Register Command: complete");
-                    this.clearCommand(id);
+                    this.debug>=DEBUG.SILLY&&console.log("*** Register Command: complete",commandId);
+                    setTimeout(()=>this.clearCommand(id),50); // make sure all promises complete before running this.
                 });
         }.bind(this))(commandId,promise);
         return this.cmd[commandId].cmd;
@@ -414,7 +419,10 @@ export default class Channel extends events.EventEmitter {
     // status() { return this.status }
     close(force) { 
         if (this.status&CHANNEL.RUNNING) {
-            if (force) this.stream.write('/cancel');
+            if (force)
+                Object.keys(this.cmd).forEach(id=>{
+                    this.stream.write('/cancel',[],id);
+                });
             this.closeOnDone=true;
             this.sync=true;
             this.status=CHANNEL.CLOSING;

@@ -1,11 +1,11 @@
 
 var MikroNode = require('../dist/mikronode.js');
 // Create API instance to a host.
-var device = new MikroNode('10.10.10.1');
+var device = new MikroNode('10.10.10.10');
 // device.setDebug(MikroNode.DEBUG);
 
 // Connect to MikroTik device
-device.connect('username','password').then(
+device.connect(/* socketOpts */).then(([login])=>login('username','password')).then(
 	function(conn) { 
 		// When all channels are marked done, close the connection.
 		conn.closeOnDone(true);
