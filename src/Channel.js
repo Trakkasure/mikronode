@@ -375,6 +375,7 @@ export default class Channel extends events.EventEmitter {
                     this.status=CHANNEL.DONE;
                     this.bufferedStream.next(data);
                     p.resolve(data);
+                    this.emit('done',data);
                 },
                 error=>{
                     this.debug>=DEBUG.SILLY&&console.error("*** Register Command: error",id,error);
