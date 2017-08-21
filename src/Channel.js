@@ -348,6 +348,7 @@ export default class Channel extends events.EventEmitter {
                                 this.close(true);
                             }
                             p.reject(error);
+                            this.emit('trap',error);
                         },null,
                         // this should happen for every command
                         ()=>{
