@@ -1,10 +1,10 @@
 var api=require('../dist/mikronode.js');
 
-var device=new api(/* Host */'10.10.10.1' /*, Port */ /*, Timeout */);
+var device=new api(/* Host */'10.10.10.10' /*, Port */ /*, Timeout */);
 // device.setDebug(api.DEBUG);
 
 // connect: user, password.
-device.connect('username','password').then(function(conn) {
+device.connect().then(([login])=>login('username','password')).then(function(conn) {
     var c1=conn.openChannel();
     var c2=conn.openChannel();
     c1.closeOnDone(true);
