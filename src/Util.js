@@ -98,12 +98,58 @@ function hexDump(data) {
 // This is probably over done...
 // Uncomment if you want to detail trace your promises.
 function nullfunc(){}
+const rejectionWatcher=new WeakMap();
+
+// function clearRejectionTrack(catcher,reason) {
+//     const x=rejectionWatcher.get(this);
+//     x.splice(x.findIndex(catcher),1);
+//     return catcher.call(this,reason);
+// }
+
+// function proxyThenCatch(promise) {
+//     const catchEx = promise.catch;
+//     const thenEx = promise.then;
+    
+//     console.log("Adding promise to watcher map");
+//     // rejectionWatcher.set(promise,[]);
+
+//     promise.then=function(handler,catcher) {
+//         if (catcher) {
+//             // rejectionWatcher.get(promise).push(catcher);
+//             console.log("tracking catcher");
+//         }
+//         return proxyThenCatch(thenEx.call(promise,handler,clearRejectionTrack.bind(promise,catcher)));
+//     }.bind(promise);
+
+//     promise.catch=function(catcher) {
+//         if (!catcher) return;
+//         // rejectionWatcher.get(promise).push(catcher);
+//         return proxyThenCatch(catchEx.call(promise,catcher));
+//     }.bind(promise);
+//     return promise;
+// }
+
+process.on('unhandledRejection',function(event,promise){
+    if (event.cmd) return;
+    //     console.log("caught unhandled rejection. Command still running...");
+    //     rejectionWatcher.set(promise,event);
+    // } else
+        console.error("Unhandled rejection: ",JSON.stringify(event,true,4),'\n',promise);
+});
+
+// process.on('rejectionHandled',function(p){
+//     console.log('Rejection handled.');
+//     rejectionWatcher.delete(p);
+// });
+
 function getUnwrappedPromise() {
     let resolve,reject;
+    const e = new Error();
     const promise = new Promise((res,rej)=>{
         resolve=res;
         reject=rej;
     });
+    promise.createdAt=e.stack.split('\n').slice(2,3).join('\n');
     return {
         get promise() {
             return promise;

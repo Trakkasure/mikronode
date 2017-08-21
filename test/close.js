@@ -2,22 +2,28 @@
 // This only verifies that all channels have been eliminated.
 // A more full-featured test is in the works. 
 
-var api=require('../lib/index.js')
+var api=require('../dist/mikronode.js')
 
-var config=require('./config.js');
-config.push({debug:2}); // Add debug options to see what's happening.
-var connection=api.prototype.constructor.apply(api,config)
+var device=new api('10.10.10.10');
+// device.setDebug(api.DEBUG);
 
-connection.connect(function(c) {
+device.connect(
+    function(err,login) {
+        login('admin','password',runProgram);
+    }
+);
+
+function runProgram(err,c) {
+
     console.log('Connection established');
 
-    channel1 = c.openChannel();
-    channel2 = c.openChannel();
-    channel3 = c.openChannel();
-    
+    const channel1 = c.openChannel(1);
+    const channel2 = c.openChannel(2);
+    const channel3 = c.openChannel(3);
 
     c.on('close',function(c2) {
-        id=channel1.getId();
+        var id=channel1.getId();
+        console.log("Channel closing...")
         try {
             c2.getChannel(id);
             console.log('Channel %s is still available. Error.',id);
@@ -39,6 +45,6 @@ connection.connect(function(c) {
             console.log('Channel %s is gone!',id);
         }
     });
-    channel1.write('/quit')
-});
+    channel1.write('/quit').catch(e=>{console.log("Error writing quit",e)})
+}
         

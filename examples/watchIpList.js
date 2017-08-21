@@ -2,14 +2,14 @@
 var MikroNode = require('../dist/mikronode.js');
 
 // Create API link to host. No connection yet..
-var device = new MikroNode('10.10.10.1');
+var device = new MikroNode('10.10.10.10');
 
 // Debug level is "DEBUG"
 // device.setDebug(MikroNode.DEBUG);
 
 var removeId=[];
 // Connect to the MikroTik device.
-device.connect('username','password').then(function(conn) {
+device.connect().then(([login])=>login('username','password')).then(function(conn) {
 
     var channel=conn.openChannel('all_addresses');
     channel.closeOnDone(true); // only use this channel for one command.
