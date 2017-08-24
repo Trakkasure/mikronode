@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "scripts": {
     "build": "webpack --color --progress",
@@ -48,10 +48,10 @@
     "webpack-dev-server": "^1.15.0"
   },
   "dependencies": {
-    "rxjs": "^5.0.0-beta.10"
+    "rxjs": "^5.3.0"
   },
   "main": "dist/mikronode.js",
   "engines": {
-    "node": ">= 4"
+    "node": ">= 6"
   }
 }

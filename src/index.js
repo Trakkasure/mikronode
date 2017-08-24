@@ -257,10 +257,13 @@ class SocketStream {
         this.sentence$=new Subject();
         // Each raw sentence from the stream passes through this parser.
         this.parsed$=this.sentence$
-            .map(o=>o.join('\n')) // Make array string.
+            .map(o=>o.map(x=>x.split("\r").join("\\r").split("\n").join("\\n")).join('\n')) // Make array string.
             .do(d=>this.debug>=DEBUG.SILLY&&console.log("Data to parse:",d))
             .map(d=>{var s=parser.parse(d);s.host=this.host;return s;})
-            .flatMap(d=>Observable.from(d)) // break off observable from parse stream.
+            .flatMap(d=>{
+                Object.keys(d).forEach(k=>{if(typeof d[k]==="string")d[k]=d[k].split("\\r").join("\r").split("\\n").join("\n")});
+                return Observable.from(d);
+            }) // break off observable from parse stream.
             .share(); // parse the string.
 
         // When we receive data, it is pushed into the stream defined below.
