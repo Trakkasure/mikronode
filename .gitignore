@@ -1,2 +1,8 @@
 node_modules
 dist
+examples
+test
+.vscode
+.jshintrc
+jsconfig.json
+webpack.config.babel.js

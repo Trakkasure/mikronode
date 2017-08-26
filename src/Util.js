@@ -177,10 +177,9 @@ function getUnwrappedPromise() {
 }
 
 function objToAPIParams(obj,type) {
-    const prefix=type==='print'?'?':'=';
-    const t=RegExp("[a-zA-Z]");
+    const prefix=type==='print'?'':'=';
     return Object.keys(obj)
-        .map(k=>obj[k]?`${t.test(k[0])?prefix:""}${k}=${obj[k]}`:`${t.test(k[0])?prefix:""}${k}`);
+        .map(k=>obj[k]?`${prefix}${k}=${obj[k]}`:`${prefix}${k}`);
 }
 
 function resultsToObj(r) {
