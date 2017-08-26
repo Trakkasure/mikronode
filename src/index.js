@@ -417,7 +417,7 @@ class SocketStream {
     write(data,args) {
         if (args && typeof(args)===typeof({}))  {
             this.debug>=DEBUG.SILLY&&console.log("Converting obj to args",args);
-            data=data.concat(objToAPIParams(args,data[0].split('/').pop()));
+            data=data.concat(Array.isArray(args)?args:objToAPIParams(args,data[0].split('/').pop()));
         }
         this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write:',[data]);
         if (!this.socket||!(this.status&(CONNECTION.CONNECTED|CONNECTION.CONNECTING))) {
