@@ -40,35 +40,41 @@ function encodeString(s,d) {
     return data;
 }
 
-function decodeLength(data){ // Ported from the PHP API on the Wiki. Thanks
-    if (!data.length) return [[],0];
-    var idx=0;
-    var len=data.length;
-    var b=data[idx++];
-    if (b&128) {
-        if ((b&192)==128) {
-            len=((b&63)<<8)+data[idx++];
-        } else {
-            if ((b & 224) == 192) {
-                len = ((b & 31) << 8 ) + data[idx++];
-                len = (len << 8 ) + data[idx++];
+function decodePacket(data){
+    if (!data.length) return [];
+    const buf=[];
+    let idx=0;
+    while (idx<data.length) {
+        let len;
+        let b=data[idx++];
+        if (b&128) { // Ported from the PHP API on the Wiki. Thanks
+            if ((b&192)==128) {
+                len=((b&63)<<8)+data[idx++];
             } else {
-                if ((b & 240) == 224) {
-                    len = ((b & 15) << 8 ) + data[idx++];
-                    len = (len << 8 ) + data[idx++];
+                if ((b & 224) == 192) {
+                    len = ((b & 31) << 8 ) + data[idx++];
                     len = (len << 8 ) + data[idx++];
                 } else {
-                    len = data[idx++];
-                    len = (len << 8 ) + data[idx++];
-                    len = (len << 8 ) + data[idx++];
-                    len = (len << 8 ) + data[idx++];
+                    if ((b & 240) == 224) {
+                        len = ((b & 15) << 8 ) + data[idx++];
+                        len = (len << 8 ) + data[idx++];
+                        len = (len << 8 ) + data[idx++];
+                    } else {
+                        len = data[idx++];
+                        len = (len << 8 ) + data[idx++];
+                        len = (len << 8 ) + data[idx++];
+                        len = (len << 8 ) + data[idx++];
+                    }
                 }
             }
-        }
-    } else {
-        len=b;
+        } else {
+            len=b;
+        } 
+        // console.log("Pushing ",idx,len,data.slice(idx,idx+len));
+        buf.push(data.slice(idx,idx+len).toString('utf8'));
+        idx+=len;
     }
-    return [data.slice(idx),len];
+    return buf;
 }
 //hexDump=require('./hexdump');
 function hexDump(data) {
@@ -191,4 +197,4 @@ function resultsToObj(r) {
     if (!Array.isArray(r)) return {};
     return r.reduce((p,f)=>{p[f.field]=f.value;return p},{});
 }
-export {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj,getUnwrappedPromise};
+export {hexDump, decodePacket, encodeString, objToAPIParams, resultsToObj,getUnwrappedPromise};
