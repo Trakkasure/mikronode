@@ -49,6 +49,7 @@ const EVENT = {
   , TAG: 'tag'
   , DONE_RET_TAG: 'done_ret_tag'
   , DONE_TAG: 'done_tag'
+  , RE: 're'
   , DATA: 'data'  // This is an artifical event, not one from the API
 };
 
