@@ -4,8 +4,10 @@ start
 
 packet
   = re s tag:tag data:data+ { return {type: "data", data:data, tag:tag} }
+  / re s tag:tag { return {type: "re", tag:tag} }
   / re s data:data+ tag:tag { return {type: "data", data:data, tag:tag} }
   / re s data:data+ { return {type: "data", data:data} }
+  / re s { return {type: "re"} }
   / e:end s {return e}
 
 re
