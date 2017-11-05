@@ -1,2 +1,7 @@
 node_modules
 dist
+test
+.vscode
+.jshintrc
+jsconfig.json
+src/parser.js
