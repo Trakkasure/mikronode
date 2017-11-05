@@ -187,7 +187,7 @@ export default class Channel extends events.EventEmitter {
                 const cmd=this.getCommandId(data);
                 const d={...data,tag:data.tag.substring(0,data.tag.lastIndexOf('-')),cmd:(this.getCommand(cmd)||{cmd:null}).cmd};
                 if (d.type==EVENT.DONE_RET||d.type===EVENT.DONE_RET_TAG) {
-                    d.data=d.data[0];
+                    d.data=d.data;
                     const d2={...d,type:EVENT.DATA};
                     return Observable.of(d2).concat(Observable.of(d));
                 }

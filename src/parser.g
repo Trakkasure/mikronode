@@ -26,8 +26,8 @@ value
 end
   = f:fatal                                      {return {type: "fatal", data:f } }
   / t:trap                                       {return t}
-  / "!done" s "=ret=" ret:[a-zA-Z0-9]+           {return {type: "done_ret", data:ret.join('')}}
-  / "!done" s tag:tag s "=ret=" ret:[a-zA-Z0-9]+ {return {type: "done_ret", tag:tag, data:ret}}
+  / "!done" s "=ret=" ret:.+           {return {type: "done_ret", data:ret.join('')}}
+  / "!done" s tag:tag s "=ret=" ret:.+ {return {type: "done_ret", tag:tag, data:ret.join('')}}
   / "!done" s tag:tag                            {return {type: "done_ret", tag:tag}}
   / "!done"                                      {return {type: "done" }}
   / tag:tag                                      {return {type: "tag", tag:tag }}
