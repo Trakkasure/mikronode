@@ -185,11 +185,17 @@ export default class Channel extends events.EventEmitter {
             .do(e=>this.debug>=DEBUG.SILLY&&console.log('Channel (%s)::%s Sentence on channel ',e.tag))
             .flatMap(data=>{
                 const cmd=this.getCommandId(data);
-                return Observable.of({...data,tag:data.tag.substring(0,data.tag.lastIndexOf('-')),cmd:(this.getCommand(cmd)||{cmd:null}).cmd});
+                const d={...data,tag:data.tag.substring(0,data.tag.lastIndexOf('-')),cmd:(this.getCommand(cmd)||{cmd:null}).cmd};
+                if (d.type==EVENT.DONE_RET||d.type===EVENT.DONE_RET_TAG) {
+                    d.data=d.data[0];
+                    const d2={...d,type:EVENT.DATA};
+                    return Observable.of(d2).concat(Observable.of(d));
+                }
+                return Observable.of(d);
             }).share();
 
         // Stream for sentences with data.
-        this.data = this.createStream(this.read,[EVENT.DATA,EVENT.DONE_RET]).share();
+        this.data = this.createStream(this.read,[EVENT.DATA,EVENT.DATA_RET,EVENT.DATA_RET_TAG]).share();
 
         // Stream for signaling when done.
         this.done = this.createStream(this.read,[EVENT.DONE,EVENT.DONE_RET,EVENT.DONE_TAG]).share();
@@ -349,17 +355,11 @@ export default class Channel extends events.EventEmitter {
                             }
                             p.reject(error);
                             this.emit('trap',error);
-                        },null,
-                        // this should happen for every command
-                        ()=>{
-                            this.debug>=DEBUG.SILLY&&console.log("*** Register Command: complete from trap", commandId);
-                        });
-                    } else
-                    return o;
+                        },null);
+                    } else return o;
                 },{})
 
             const isListen=command.split('/').indexOf('listen')>0;
-            const data=
             this.data
                 .filter(data=>data.cmd.id===id)
                 .takeUntil(race)
