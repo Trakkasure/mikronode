@@ -1,7 +1,12 @@
-node_modules
 npm-debug.log
+.vscode
 examples
-test
+node_modules
 src
+test
 webpack.config.babel.js
 .babelrc
+.eslintrc.json
+.npmignore
+constants.js
+jsconfig.json
