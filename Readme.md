@@ -10,7 +10,7 @@
        .then(([login])=>{
          return login('username','password');
        })
-       .then(function(connection) {
+       .then(function(conn) {
 
          var chan=conn.openChannel("addresses"); // open a named channel
          var chan2=conn.openChannel("firewall_connections",true); // open a named channel, turn on "closeOnDone"

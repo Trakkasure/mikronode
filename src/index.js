@@ -7,7 +7,7 @@ import {autobind} from 'core-decorators';
 import crypto from 'crypto';
 import dns from 'dns';
 
-import {hexDump, decodeLength, encodeString, objToAPIParams, resultsToObj, getUnwrappedPromise} from './Util.js';
+import {hexDump, decodePacket, encodeString, objToAPIParams, resultsToObj, getUnwrappedPromise} from './Util.js';
 import {STRING_TYPE, DEBUG, CONNECTION,CHANNEL,EVENT} from './constants.js';
 import parser from './parser.js';
 
@@ -256,10 +256,30 @@ class SocketStream {
 
         this.sentence$=new Subject();
         // Each raw sentence from the stream passes through this parser.
+        let holdBuffer=[];
         this.parsed$=this.sentence$
+            .do(d=>this.debug>=DEBUG.SILLY&&console.log("Data to parse:",JSON.stringify(d)))
             .map(o=>o.map(x=>x.split("\r").join("\\r").split("\n").join("\\n")).join('\n')) // Make array string.
-            .do(d=>this.debug>=DEBUG.SILLY&&console.log("Data to parse:",d))
-            .map(d=>{var s=parser.parse(d);s.host=this.host;return s;})
+            .map(d=>{
+                    if (holdBuffer.length) {
+                        console.log("Hold buffer:",holdBuffer);
+                        holdBuffer=[];
+                    }
+                    var s=parser.parse(d);
+                    s.host=this.host;
+                    return s;
+            })
+            .catch(e=>{
+                holdBuffer=[];
+                console.error("***************************************************************************");
+                console.error("***************************************************************************");
+                console.error("Error processing sentence:",e);
+                console.error("Skipping and continuing");
+                console.error("***************************************************************************");
+                console.error("***************************************************************************");
+                return this.parsed$;
+            })
+            .filter(e=>!!e)
             .flatMap(d=>{
                 Object.keys(d).forEach(k=>{if(typeof d[k]==="string")d[k]=d[k].split("\\r").join("\r").split("\\n").join("\n")});
                 return Observable.from(d);
@@ -269,56 +289,22 @@ class SocketStream {
         // When we receive data, it is pushed into the stream defined below.
         this.data$=Observable.fromEvent(this.socket,'data');
         // this is the stream reader/parser.
-        this.data$.scan((last,stream,i)=>{
-            let buff=Buffer.concat([last.b,stream]),
-                l=last.len,
-                o=last.o,
-                c,go;
+        // My poor stream parser
+        this.data$.scan((/* @type Buffer */ last,/* @type Buffer */stream,i)=>{
+            let buff=Buffer.concat([last,stream]),end=0,idx=0,packet;
+            this.debug>=DEBUG.DEBUG&&console.log("Packet received: ",stream.toString().split('\u0000'));
+            this.debug>=DEBUG.DEBUG&&last.length>0&&console.log("Starting parse loop w/existing packet ",last.toString());
 
-            this.debug>=DEBUG.DEBUG&&console.log("Packet received: ",last,stream);
-            // If the xpected length of lst process is zero, we expect to be told next buffer length.
-            if(!last.len) {
-                // Getting length;
-                this.debug>=DEBUG.SILLY&&console.log("Getting length");
-                [buff,l] = decodeLength(buff);
-                this.debug>=DEBUG.SILLY&&console.log("Length: ",l);
-                // We didn't get all of the data from this buffer. Wait for next packet.
-                if (buff.length<l) {
-                    this.debug>=DEBUG.DEBUG&&console.log("Buffer shorter than expected data, waiting for next packet.",{b:buff,len:l,o:o});
-                    return {b:buff,len:l,o:o};
-                }
+            while(idx<buff.length&&(end = buff.indexOf("\u0000",idx,"utf8")) !== -1 ) {
+                this.debug>=DEBUG.SILLY&&console.log("Decoding: ",idx,end,buff.length,buff.slice(idx,end));
+                packet=decodePacket(buff.slice(idx,end));
+                idx=end+1;
+                this.debug>=DEBUG.SILLY&&console.log('Detected end of sentence, posting existing sentence',packet);
+                this.sentence$.next(packet);
             }
-            go=buff.length>0;
-            this.debug>=DEBUG.SILLY&&console.log("Starting parse loop w/existing length ",l);
-            while(go) {
-                c = buff.slice(0,l).toString('utf8');
-                this.debug>=DEBUG.SILLY&&console.log("Extracted data: ",c);
-                // Push content as sentence piece.
-                o.push(c);
-                // If we detected end of sentence
-                if (buff[l]===0) {
-                    // then post new sentence.
-                    this.debug>=DEBUG.DEBUG&&console.log('Detected end of sentence, posting existing sentence',o);
-                    this.sentence$.next(o);
-                    // Reset sentence buffer.
-                    l++;
-                    o=[];
-                }
-                this.debug>=DEBUG.SILLY&&console.log("Getting length",buff.slice(l));
-                [buff,l] = decodeLength(buff.slice(l));
-                this.debug>=DEBUG.SILLY&&console.log("Length",l);
-                if (!l) {
-                    this.debug>=DEBUG.DEBUG&&console.log('End of data, nothing left to process');
-                    go=false;
-                    return {b:Buffer.from([]),len:0,o:[]};
-                }
-                if (buff.length<l) {
-                    this.debug>=DEBUG.DEBUG&&console.log("Buffer shorter than expected data, waiting for next packet.",{b:buff,len:l,o:o});
-                    return {b:buff,len:l,o:o};
-                }
-            }
-        },{b:Buffer.from([]),len:0,o:[]})
-        .subscribe(e=>this.debug>=DEBUG.DEBUG&&e.len&&console.log('Buffer leftover: ',e),closeSocket,closeSocket);
+            return idx>=buff.length?Buffer.alloc(0):buff.slice(idx,buff.length);
+        },Buffer.from([]))
+        .subscribe(e=>this.debug>=DEBUG.DEBUG&&e.length&&console.log('Buffer leftover: ',e),closeSocket,closeSocket);
 
 
         this.socket.on('end',a => {
@@ -417,7 +403,7 @@ class SocketStream {
     write(data,args) {
         if (args && typeof(args)===typeof({}))  {
             this.debug>=DEBUG.SILLY&&console.log("Converting obj to args",args);
-            data=data.concat(objToAPIParams(args,data[0].split('/').pop()));
+            data=data.concat(Array.isArray(args)?args:objToAPIParams(args,data[0].split('/').pop()));
         }
         this.debug>=DEBUG.DEBUG&&console.log('SocketStream::write:',[data]);
         if (!this.socket||!(this.status&(CONNECTION.CONNECTED|CONNECTION.CONNECTING))) {
