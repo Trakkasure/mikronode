@@ -1,7 +1,7 @@
 {
   "name": "mikronode",
   "description": "Mikrotik API implemented in Node",
-  "version": "2.3.6",
+  "version": "2.3.7",
   "author": "Brandon Myers <trakkasure@gmail.com>",
   "scripts": {
     "prebuild": "pegjs src/parser.g",

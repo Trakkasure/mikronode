@@ -4,3 +4,4 @@ test
 .vscode
 .jshintrc
 jsconfig.json
+src/parser.js
