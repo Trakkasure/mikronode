@@ -509,19 +509,19 @@ export default class Channel extends events.EventEmitter {
 
     on(event,func) {
         const ret=super.on(event,func);
-        setupEventSubscription(event,getStreamByEventType(event));
+        this.setupEventSubscription(event,this.getStreamByEventType(event));
         return ret;
     }
 
     addEventListener(event,func) {
         const ret=super.addEventListener(event,func);
-        setupEventSubscription(event,getStreamByEventType(event));
+        this.setupEventSubscription(event,this.getStreamByEventType(event));
         return ret;
     }
 
     once(event,func) {
         const ret=super.once(event,func);
-        setupEventSubscription(event,getStreamByEventType(event));
+        this.setupEventSubscription(event,this.getStreamByEventType(event));
         return ret;
     }
 
