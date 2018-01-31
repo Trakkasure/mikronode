@@ -188,6 +188,7 @@ class MikroNode {
         const promise = new Promise((resolve,reject) => {
             this.debug>=DEBUG.SILLY&&console.log('Connecting to remote host. Detected %s',net.isIPv6(this.host)?'ipv6':net.isIPv4(this.host)?'ipv4':'DNS lookup');
             const fn=((net.isIPv4(this.host)||net.isIPv6(this.host))?((this.socketOpts.family=net.isIPv6(this.host)?6:4),(a,b)=>b(null,[a])):((this.socketOpts.family==6)?dns.resolve4:dns.resolve6));
+            
             fn(this.host,(err,data)=>{
                 if (err) {
                     return reject("Host resolve error: ",err);
@@ -207,7 +208,7 @@ class MikroNode {
                     this.sock.getStream().sentence.take(1).subscribe(null,reject,null);
                 }).catch(err=>{
                     if (cb) cb(err,null);
-                    reject("Caught error in socket connect",err);
+                    reject(err);
                 });
                 // reject connect promise if the socket throws an error.
             });
@@ -304,7 +305,7 @@ class SocketStream {
             }
             return idx>=buff.length?Buffer.alloc(0):buff.slice(idx,buff.length);
         },Buffer.from([]))
-        .subscribe(e=>this.debug>=DEBUG.DEBUG&&e.length&&console.log('Buffer leftover: ',e),closeSocket,closeSocket);
+        .subscribe(e=>this.debug>=DEBUG.DEBUG&&e.length&&console.log('Buffer leftover: ',e),this.closeSocket,this.closeSocket);
 
 
         this.socket.on('end',a => {
@@ -323,16 +324,6 @@ class SocketStream {
 
         this.setTimeout(timeout);
 
-        // This is the function handler for error or complete for the parsing functions.
-        const closeSocket=(e)=>{
-            this.debug>=DEBUG.DEBUG&&console.log("Closing Socket ",e);
-            e?this.rawSocket.destroy(e):this.rawSocket.destroy();
-        }
-        /** Listen for complete on stream to dictate if socket will close */
-        this.sentence$
-            // .do(d=>console.log("Sentence: ",d))
-            .subscribe(null,closeSocket,closeSocket);
-
         // This will be called if there is no activity to the server.
         // If this occurs before the login is successful, it could be
         // that it is a connection timeout.
@@ -343,6 +334,13 @@ class SocketStream {
 
     }
 
+    // This is the function handler for error or complete for the parsing functions.
+    @autobind
+    @Private
+    closeSocket(e){
+        this.debug>=DEBUG.DEBUG&&console.log("Closing Socket ",e);
+        e?this.rawSocket.destroy(e):this.rawSocket.destroy();
+    }
     setDebug(d) {
         this.debug>=DEBUG.DEBUG&&console.log('SocketStream::setDebug',[d]);
         this.debug=d;
@@ -365,6 +363,10 @@ class SocketStream {
         this.status=CONNECTION.CONNECTING;
         this.host = socketOpts.host||'localhost';
         return new Promise((res,rej)=>{
+        /** Listen for complete on stream to dictate if socket will close */
+        this.sentence$
+            // .do(d=>console.log("Sentence: ",d))
+            .subscribe(null,(e)=>{rej(e);this.closeSocket()},this.closeSocket);
             // Connect to the socket. This works for both TLS and non TLS sockets.
             try {
                 this.rawSocket.connect(socketOpts,(...args)=>{
@@ -389,7 +391,8 @@ class SocketStream {
                     else res([socketOpts,...args]);
                 });
             } catch (e) {
-                rej("Caught exception while opening socket: ",e)
+                this.debug>=DEBUG.DEBUG&&console.error('Caught exception while opening socket: ',e);
+                rej(e);
             }
         });
     }
