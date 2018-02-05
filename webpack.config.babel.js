@@ -5,6 +5,10 @@ module.exports = {
       mikronode:['./src/index.js']
     },
     target: 'node',
+    externals: [
+      "rxjs",
+      "core-decorators"
+    ],
     module: {
       loaders: [
         {
