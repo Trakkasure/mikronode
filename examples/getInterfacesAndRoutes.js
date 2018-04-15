@@ -4,7 +4,9 @@ var device=new api(/* Host */'10.10.10.10' /*, Port */ /*, Timeout */);
 // device.setDebug(api.DEBUG);
 
 // connect: user, password.
-device.connect().then(([login])=>login('username','password')).then(function(conn) {
+device.connect()
+.then(([login])=>login('username','password'))
+.then(function(conn) {
     var c1=conn.openChannel();
     var c2=conn.openChannel();
     c1.closeOnDone(true);
@@ -29,6 +31,7 @@ device.connect().then(([login])=>login('username','password')).then(function(con
         console.log(JSON.stringify(data.data,true,2));
       });
 
-},function(err) {
-  console.log("Error connecting:",err);
+})
+.catch(function(err) {
+  console.log("Error during processing:",err);
 });

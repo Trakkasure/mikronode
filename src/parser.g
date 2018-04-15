@@ -17,7 +17,7 @@ data
   = id:identifier value:value s { return {field:id, value:value}}
 
 identifier
-  = "=" id:[\.a-z\-0-9]+ "=" {return id.join('')}
+  = "=" id:[\.a-zA-Z\-0-9]+ "=" {return id.join('')}
 
 value
   = v:[^\r\n\0]+ {return v.join('')}
