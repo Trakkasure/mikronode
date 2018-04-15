@@ -29,9 +29,9 @@
 
          });
 
-         chan.write('/ip/firewall/print');
+         chan2.write('/ip/firewall/print');
 
-         chan.done.subscribe(function(data){
+         chan2.done.subscribe(function(data){
 
               // data is all of the sentences in an array.
               data.forEach(function(item) {
