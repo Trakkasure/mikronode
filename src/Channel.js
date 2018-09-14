@@ -359,7 +359,7 @@ export default class Channel extends events.EventEmitter {
                     } else return o;
                 },{})
 
-            const isListen=command.split('/').indexOf('listen')>0;
+            const isListen= typeof command === 'object' ? command.indexOf('listen')>0 : command.split('/').indexOf('listen')>0;
             this.data
                 .filter(data=>data.cmd.id===id)
                 .takeUntil(race)
