@@ -55,5 +55,9 @@
   "main": "dist/mikronode.js",
   "engines": {
     "node": ">= 6"
+  },
+  "dependencies": {
+    "pegjs": "^0.10.0",
+    "promise": "^8.0.1"
   }
 }
