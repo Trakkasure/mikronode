@@ -158,30 +158,40 @@ class MikroNode {
 
         const close=()=>this.sock.getStream().sentence.complete();
 
-        const login=(user,password,cb)=>{
+        const login=(user,password,newMethod = false,cb)=>{
             this.debug>=DEBUG.DEBUG&&console.log('Logging in');
-            stream.write('/login');
-            const {promise,resolve,reject}=getUnwrappedPromise();
-            // Create a connection handler
-            this.connection=new Connection(
-                {...stream,close},
-                challenge=>{
-                    const md5=crypto.createHash('md5');
-                    md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
-                    stream.write([
-                        "/login",
-                        "=name="+user,
-                        "=response=00"+md5.digest("hex")
-                    ]);
-                },{resolve,reject}
-            );
-            this.connection.setDebug(this.debug);
-            promise.then(()=>{
-                if (cb) cb(null,this.connection);
-            },err=>{
-                if (cb) cb(err,null);
-            });
-            return promise;
+            // if(!newMethod){
+				stream.write('/login');
+			// }
+			const {promise,resolve,reject}=getUnwrappedPromise();
+			// Create a connection handler
+			this.connection=new Connection(
+				{...stream,close},
+				challenge=>{
+					if(newMethod){
+						stream.write([
+							"/login",
+							"=name="+user,
+							"=password="+password
+						]);
+					} else {
+						const md5=crypto.createHash('md5');
+						md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
+						stream.write([
+							"/login",
+							"=name="+user,
+							"=response=00"+md5.digest("hex")
+						]);
+					}
+				},{resolve,reject}
+			);
+			this.connection.setDebug(this.debug);
+			promise.then(()=>{
+				if (cb) cb(null,this.connection);
+			},err=>{
+				if (cb) cb(err,null);
+			});
+			return promise;
         };
 
         this.debug>=DEBUG.SILLY&&console.log('Creating promise for socket connect');

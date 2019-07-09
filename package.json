@@ -42,7 +42,9 @@
     "chai": "^3.5.0",
     "core-decorators": "^0.12.3",
     "mocha": ">=1.7.4",
-    "rxjs": "^5.3.0",
+    "pegjs": "^0.10.0",
+    "promise": "^8.0.3",
+    "rxjs": "^5.5.12",
     "simple-assign": "^0.1.0",
     "uglify-js": ">=1.2.5",
     "webpack": "^1.13.1",
@@ -55,5 +57,6 @@
   "main": "dist/mikronode.js",
   "engines": {
     "node": ">= 6"
-  }
+  },
+  "dependencies": {}
 }
