@@ -5,3 +5,4 @@ test
 .jshintrc
 jsconfig.json
 src/parser.js
+package-lock.json
