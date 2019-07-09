@@ -112,6 +112,15 @@ With the above code, the following is API description. conn is Connection object
   * conn.getHost()
   * conn.getUser()
 
+### Login
+  The login function receives 3 parameters (username: String, password: String, newMethod: Boolean), if the newMethod is set to True, it will use the login method introduced at [v6.43](https://forum.mikrotik.com/viewtopic.php?f=21&t=138995) and made obligatory at [v6.45.1](https://forum.mikrotik.com/viewtopic.php?f=21&t=149786).
+```javascript
+    var MikroNode = require('mikronode');
+    var Device =new MikroNode(host,port);
+    Device.connect().then(([login])=>login('admin','password', true)).then(function(conn) { 
+        var chan=conn.openChannel();
+    });
+```
 
 ### Channel
 
