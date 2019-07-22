@@ -166,6 +166,11 @@ class MikroNode {
             this.connection=new Connection(
                 {...stream,close},
                 challenge=>{
+                    stream.write([
+                        "/login",
+                        "=name=" + user,
+                        "=password=" + password
+                    ]);
                     const md5=crypto.createHash('md5');
                     md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
                     stream.write([
