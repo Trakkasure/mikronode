@@ -9,7 +9,7 @@ var device=new api('10.10.10.10');
 
 device.connect(
     function(err,login) {
-        login('admin','password',runProgram);
+        login('admin','password',true,runProgram);
     }
 );
 
