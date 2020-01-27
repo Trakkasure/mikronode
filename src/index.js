@@ -157,8 +157,11 @@ class MikroNode {
         } else if (typeof arg1===typeof function(){}) cb=arg1;
 
         const close=()=>this.sock.getStream().sentence.complete();
-
-        const login=(user,password,cb)=>{
+        /** Flag added to choose between pre-v6.43 and post-v6.43 (post-v6.43 by default)*/
+        const login=(user,password,post,cb)=>{
+            if(post === undefined){
+              post = true;
+            }
             this.debug>=DEBUG.DEBUG&&console.log('Logging in');
             stream.write('/login');
             const {promise,resolve,reject}=getUnwrappedPromise();
@@ -166,13 +169,21 @@ class MikroNode {
             this.connection=new Connection(
                 {...stream,close},
                 challenge=>{
-                    const md5=crypto.createHash('md5');
-                    md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
-                    stream.write([
+                    if(post){
+                      stream.write([
                         "/login",
                         "=name="+user,
-                        "=response=00"+md5.digest("hex")
-                    ]);
+                        "=password="+password
+                      ]);
+                    }else{
+                      const md5=crypto.createHash('md5');
+                      md5.update(Buffer.concat([Buffer.from(nullString+password),Buffer.from(challenge)]));
+                      stream.write([
+                          "/login",
+                          "=name="+user,
+                          "=response=00"+md5.digest("hex")
+                      ]);
+                    }
                 },{resolve,reject}
             );
             this.connection.setDebug(this.debug);
